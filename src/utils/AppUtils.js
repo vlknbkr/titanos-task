@@ -3,33 +3,40 @@
  * Finds the coordinates (row and column index) of an app within a specific category.
  * Performs a case-insensitive search for both category and app name.
  * 
+ * @param {import('@playwright/test').Page} page - The Playwright Page object.
  * @param {string} categoryName - The name of the category (e.g., "Sports").
  * @param {string} appName - The name of the app (e.g., "Red Bull TV").
- * @returns {{rowIndex: number, colIndex: number} | null} The coordinates or null if not found.
+ * @returns {Promise<{rowIndex: number, colIndex: number} | null>} The coordinates or null if not found.
  */
-function getAppCoordinates(categoryName, appName) {
-    const listContainer = document.querySelector('[data-testid="lists-container"]');
-    if (!listContainer) return null;
+async function getAppCoordinates(listContainer, categoryName, appName) {
+    const lists = listContainer.locator('[data-testid^="list-item-"]');
 
-    const lists = listContainer.querySelectorAll('[data-testid^="list-item-app_list-"]');
-
+    const listsCount = await lists.count();
+    console.log("listCount: ", listsCount);
     const targetCategory = categoryName.trim().toLowerCase();
     const targetApp = appName.trim().toLowerCase();
 
-    for (let rIndex = 0; rIndex < lists.length; rIndex++) {
-        const list = lists[rIndex];
-        const label = list.getAttribute('aria-label');
+    for (let rIndex = 0; rIndex < listsCount; rIndex++) {
+        const list = lists.nth(rIndex);
+        const label = await list.getAttribute('aria-label');
+        console.log("label: ", label);
 
         // Check if this is the correct category
         if (label && label.trim().toLowerCase() === targetCategory) {
-            const items = list.querySelectorAll('div[role="listitem"]');
+            const items = list.locator('div[role="listitem"]');
+            const itemsCount = await items.count();
+            console.log("itemsCount: ", itemsCount);
 
-            for (let cIndex = 0; cIndex < items.length; cIndex++) {
-                const item = items[cIndex];
-                const testId = item.getAttribute('data-testid');
+            for (let cIndex = 0; cIndex < itemsCount; cIndex++) {
+                const item = items.nth(cIndex);
+                const testId = await item.getAttribute('data-testid');
+                console.log("testId: ", testId);
 
                 // Check if this is the correct app
                 if (testId && testId.trim().toLowerCase() === targetApp) {
+                    console.log("Found app: ", targetApp);
+                    console.log("rowIndex: ", rIndex);
+                    console.log("colIndex: ", cIndex);
                     return { rowIndex: rIndex, colIndex: cIndex };
                 }
             }
@@ -39,4 +46,4 @@ function getAppCoordinates(categoryName, appName) {
     return null;
 }
 
-module.exports = { getAppsFromContainer, getAppCoordinates };
+module.exports = { getAppCoordinates };

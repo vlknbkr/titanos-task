@@ -4,16 +4,24 @@ class RemoteControl {
     }
 
     async left(times = 1) {
-        await this.page.keyboard.press('ArrowLeft');
+        for (let i = 0; i < times; i++) {
+            await this.page.keyboard.press('ArrowLeft');
+        }
     }
     async right(times = 1) {
-        await this.page.keyboard.press('ArrowRight');
+        for (let i = 0; i < times; i++) {
+            await this.page.keyboard.press('ArrowRight');
+        }
     }
     async down(times = 1) {
-        await this.page.keyboard.press('ArrowDown');
+        for (let i = 0; i < times; i++) {
+            await this.page.keyboard.press('ArrowDown');
+        }
     }
     async up(times = 1) {
-        await this.page.keyboard.press('ArrowUp');
+        for (let i = 0; i < times; i++) {
+            await this.page.keyboard.press('ArrowUp');
+        }
     }
     async select() {
         await this.page.keyboard.press('Enter');
@@ -30,4 +38,4 @@ class RemoteControl {
     }
 }
 
-module.exports = { RemoteControl };
+export default { RemoteControl };

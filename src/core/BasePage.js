@@ -1,4 +1,4 @@
-const { RemoteControl } = require('../utils/RemoteControl');
+const { RemoteControl } = require('../utils/RemoteControl').default;
 const { expect } = require('@playwright/test');
 
 class BasePage {
