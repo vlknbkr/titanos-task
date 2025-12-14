@@ -40,7 +40,7 @@ class RemoteControl {
         await this.page.keyboard.down('Enter');
         await this.page.waitForTimeout(duration);
         await this.page.keyboard.up('Enter');
-        await this.page.waitForTimeout(3000);
+        await this.page.waitForTimeout(1000);
     }
 }
 

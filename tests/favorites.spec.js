@@ -18,8 +18,8 @@ test.describe.serial('Favorites Workflow', () => {
             const isFavorite = await homePage.isAppInFavorites(appData.appName);
             expect(isFavorite).toBe(true);
         }).toPass({
-            intervals: [2000, 5000, 10000],
-            timeout: 60000
+            intervals: [1000, 2000, 5000],
+            timeout: 10000
         });
     });
 
@@ -38,14 +38,15 @@ test.describe.serial('Favorites Workflow', () => {
         await homePage.remote.longPressSelect();
         await homePage.remote.down();
         await homePage.remote.select();
-        
+        await homePage.reload();
+
         await expect(async () => {
             const isFavorite = await homePage.isAppInFavorites(appData.appName);
             console.log("App Found inside favorite List: ", isFavorite);
             expect(isFavorite).toBe(false);
         }).toPass({
-            intervals: [2000, 5000, 10000],
-            timeout: 60000
+            intervals: [1000, 2000, 5000],
+            timeout: 10000
         });
     });
 });
