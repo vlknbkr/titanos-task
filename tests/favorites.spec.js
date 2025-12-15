@@ -1,49 +1,40 @@
 import { test, expect } from "../src/fixtures/fixtures.js";
 
-
 const appData = { featureName: 'Entertainment', appName: 'tabii' };
 
 test.describe.serial('Favorites Workflow', () => {
 
-    // 1st Pass: Add app to favorites
     test(`Add ${appData.appName} to favorites`, async ({ appsPage, homePage }) => {
         await homePage.open();
-        if (await homePage.isAppInFavorites(appData.appName)) {
-            console.log(`App ${appData.appName} is already in favorites, removing it...`);
-            await homePage.deleteFromFavorites(appData.appName);
+
+        const appLocator = homePage.getAppLocator(appData.appName);
+        if (await appLocator.isVisible()) {
+            await homePage.deleteApp(appData.appName);
         }
+
         await appsPage.addAppToFavorites(appData.featureName, appData.appName);
 
         await expect(async () => {
-            const isFavorite = await homePage.isAppInFavorites(appData.appName);
-            expect(isFavorite).toBe(true);
+            await expect(appLocator).toBeVisible()
         }).toPass({
             intervals: [1000, 2000, 5000],
             timeout: 10000
         });
     });
 
-    // 2nd Pass: Remove app from favorites
     test(`Remove ${appData.appName} from favorites`, async ({ homePage, appsPage }) => {
         await homePage.open();
-        if (!await homePage.isAppInFavorites(appData.appName)) {
-            console.log("App not found in favorites, adding it first...");
+
+        const appLocator = homePage.getAppLocator(appData.appName);
+        if (!await appLocator.isVisible()) {
             await appsPage.addAppToFavorites(appData.featureName, appData.appName);
             await homePage.open();
         }
 
-        await homePage.goToApp(appData.appName);
-        expect(await homePage.isItemFocused(appData.appName)).toBe(true);
-
-        await homePage.remote.longPressSelect();
-        await homePage.remote.down();
-        await homePage.remote.select();
-        await homePage.reload();
+        await homePage.deleteApp(appData.appName);
 
         await expect(async () => {
-            const isFavorite = await homePage.isAppInFavorites(appData.appName);
-            console.log("App Found inside favorite List: ", isFavorite);
-            expect(isFavorite).toBe(false);
+            await expect(appLocator).not.toBeVisible()
         }).toPass({
             intervals: [1000, 2000, 5000],
             timeout: 10000

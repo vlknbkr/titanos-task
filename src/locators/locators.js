@@ -5,5 +5,8 @@ export const TITAN_OS_LOCATORS = {
     HOME_MENU_ITEM: '[role="menuitem"][aria-label="Home"][aria-selected]',
     FAVOURITE_APPS_CONTAINER: '[id^="favourite-apps"]',
     LIST_ITEM_ROLE: 'div[role="listitem"]',
-    LIST_ITEM_TESTID_PREFIX: '[data-testid^="list-item-"]'
+    LIST_ITEM_TESTID_PREFIX: '[data-testid^="list-item-"]',
+    SEARCH_INPUT: '[id="search-input"]',
+    CATEGORY_LIST: '[id="search-genres"]',
+    CATEGORY_CARD: (name) => `[aria-label="${name}"] > div`
 }

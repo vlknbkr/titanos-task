@@ -1,10 +1,8 @@
 import { BasePage } from '../core/BasePage.js';
-
 import { TITAN_OS_LOCATORS } from '../locators/locators.js';
-
 import { expect } from '@playwright/test';
 
-class AppsPage extends BasePage {
+export class AppsPage extends BasePage {
     constructor(page) {
         super(page);
         this.list_selector = this.page.locator(TITAN_OS_LOCATORS.LIST_SELECTOR);
@@ -15,6 +13,12 @@ class AppsPage extends BasePage {
         await this.goto('page/499');
     }
 
+    /**
+     * getting the feature and app name and navigat on it.
+     * Initial state of the curser is header so we need to do 2 more down action
+     * @param {string} featureName Movie, Entertainment etc.
+     * @param {string} itemName Youtube, Redbull etc.
+     */
     async goToApp(featureName, itemName) {
         const coordinates = await this.getAppCoordinates(this.list_selector, featureName, itemName);
         if (!coordinates) {
@@ -24,8 +28,13 @@ class AppsPage extends BasePage {
         rowIndex += 2;
         await this.remote.down(rowIndex);
         await this.remote.right(colIndex);
+        //expect correct app to be focused
     }
 
+    /**
+     * Verift that button exist and focused
+     * Selecting the "Add to Favourites" button
+     */
     async addToFavorites() {
         const button = this.addToFavoritesButton;
 
@@ -44,6 +53,11 @@ class AppsPage extends BasePage {
         }
     }
 
+    /**
+     * doing actions to add app to favorites
+     * @param {*} featureName 
+     * @param {*} appName 
+     */
     async addAppToFavorites(featureName, appName) {
         await this.open();
         await this.goToApp(featureName, appName);
@@ -94,4 +108,4 @@ class AppsPage extends BasePage {
     }
 }
 
-module.exports = { AppsPage };
+

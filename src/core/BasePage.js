@@ -1,8 +1,8 @@
-const { RemoteControl } = require('../utils/RemoteControl').default;
-const { expect } = require('@playwright/test');
+import { RemoteControl } from '../utils/RemoteControl.js';
+import { expect } from '@playwright/test';
 import { TITAN_OS_LOCATORS } from '../locators/locators.js';
 
-class BasePage {
+export class BasePage {
     constructor(page) {
         this.page = page;
         this.remote = new RemoteControl(page);
@@ -26,11 +26,8 @@ class BasePage {
 
     }
 
-    async isItemFocused(itemName) {
-        const focusedItem = this.page.locator(
-            `[data-testid="${itemName}"][data-focused="focused"]`
-        );
-        return await focusedItem.isVisible();
+    async expectFocused(focusedElement) {
+        await expect(focusedElement).toHaveAttribute('data-focused', 'focused');
     }
 
     async waitForAppToLoad() {
@@ -51,5 +48,3 @@ class BasePage {
         });
     }
 }
-
-module.exports = { BasePage };

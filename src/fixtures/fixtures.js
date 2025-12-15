@@ -1,8 +1,8 @@
 import { test as base } from "@playwright/test";
-import { HomePage } from "../pages/HomePage";
-import { AppsPage } from "../pages/AppsPage";
-import { SearchPage } from "../pages/SearchPage";
-import { ChannelPage } from "../pages/ChannelPage";
+import { HomePage } from "../pages/HomePage.js";
+import { AppsPage } from "../pages/AppsPage.js";
+import { SearchPage } from "../pages/SearchPage.js";
+import { ChannelPage } from "../pages/ChannelPage.js";
 
 // Extend base test with your page objects
 export const test = base.extend({

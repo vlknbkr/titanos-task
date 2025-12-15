@@ -44,4 +44,4 @@ class RemoteControl {
     }
 }
 
-export default { RemoteControl };
+export { RemoteControl };
