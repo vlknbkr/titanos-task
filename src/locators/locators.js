@@ -1,5 +1,6 @@
 export const TITAN_OS_LOCATORS = {
     LIST_SELECTOR: '[data-testid="lists-container"]',
+    MINI_BANNER: '[data-testid="mini-banner"]',
     ADD_TO_FAVORITES_BUTTON: '[id="app-fav-button"]',
     FEATURED_APPS: "div[aria-label='Featured Apps']",
     HOME_MENU_ITEM: '[role="menuitem"][aria-label="Home"][aria-selected]',

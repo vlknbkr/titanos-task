@@ -6,6 +6,9 @@ export class BasePage {
     constructor(page) {
         this.page = page;
         this.remote = new RemoteControl(page);
+        this.favoritesContainer = this.page.locator(
+            TITAN_OS_LOCATORS.FAVOURITE_APPS_CONTAINER
+        );
     }
 
     async open() {
@@ -22,7 +25,7 @@ export class BasePage {
      */
     async goto(path = '') {
         await this.page.goto(process.env.BASE_URL + path, { waitUntil: 'domcontentloaded' });
-        await this.page.waitForTimeout(4000);
+        //await this.page.waitForTimeout(4000);
     }
 
     async expectFocused(focusedElement) {
@@ -31,19 +34,5 @@ export class BasePage {
 
     async waitForAppToLoad() {
         await this.page.locator(TITAN_OS_LOCATORS.FEATURED_APPS).waitFor({ state: 'visible' });
-    }
-
-    async waitUntilHomeReady() {
-        this.page.waitForTimeout(3000);
-        const homeMenuItem = this.page.locator(
-            TITAN_OS_LOCATORS.HOME_MENU_ITEM
-        );
-
-        await expect(async () => {
-            await expect(homeMenuItem).toHaveAttribute('aria-selected', 'true');
-        }).toPass({
-            intervals: [2000, 5000, 10000],
-            timeout: 60000
-        });
     }
 }

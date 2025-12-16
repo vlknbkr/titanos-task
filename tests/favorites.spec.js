@@ -1,4 +1,4 @@
-import { test, expect } from "../src/fixtures/fixtures.js";
+import { test } from "../src/fixtures/fixtures.js";
 
 const appData = { featureName: 'Entertainment', appName: 'tabii' };
 
@@ -14,11 +14,7 @@ test.describe.serial('Favorites Workflow', () => {
         await appsPage.addAppToFavorites(appData.featureName, appData.appName);
 
         // Assertion
-        await homePage.ensureAppInFavorites(
-            appData.appName,
-            appData.featureName,
-            appsPage
-        );
+        await homePage.expectAppInFavorites(appData.appName);
     });
 
     test(`Remove ${appData.appName} from favorites`, async ({ homePage, appsPage }) => {
@@ -35,6 +31,6 @@ test.describe.serial('Favorites Workflow', () => {
         await homePage.deleteApp(appData.appName);
 
         // Assertion
-        await homePage.ensureAppNotInFavorites(appData.appName);
+        await homePage.expectAppNotInFavorites(appData.appName);
     });
 });

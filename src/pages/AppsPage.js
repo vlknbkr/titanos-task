@@ -5,80 +5,83 @@ import { expect } from '@playwright/test';
 export class AppsPage extends BasePage {
     constructor(page) {
         super(page);
-        this.list_selector = this.page.locator(TITAN_OS_LOCATORS.LIST_SELECTOR);
-        this.addToFavoritesButton = this.page.locator(TITAN_OS_LOCATORS.ADD_TO_FAVORITES_BUTTON);
+
+        this.listSelector = this.page.locator(TITAN_OS_LOCATORS.LIST_SELECTOR);
+        this.addToFavoritesButton = this.page.locator(
+            TITAN_OS_LOCATORS.ADD_TO_FAVORITES_BUTTON
+        );
     }
 
     async open() {
         await this.goto('page/499');
+        await this.waitUntilAppsReady();
     }
 
     /**
-     * getting the feature and app name and navigat on it.
-     * Initial state of the curser is header so we need to do 2 more down action
-     * @param {string} featureName Movie, Entertainment etc.
-     * @param {string} itemName Youtube, Redbull etc.
+     * Navigate to a specific app using remote navigation.
+     * Cursor initially starts on the header, so we offset rows accordingly.
      */
     async goToApp(featureName, itemName) {
-        const coordinates = await this.getAppCoordinates(this.list_selector, featureName, itemName);
+        const coordinates = await this.getAppCoordinates(
+            this.listSelector,
+            featureName,
+            itemName
+        );
+
         if (!coordinates) {
             throw new Error(`App not found: ${featureName} - ${itemName}`);
         }
-        let { rowIndex, colIndex } = coordinates;
-        rowIndex += 2;
-        await this.remote.down(rowIndex);
+
+        const { rowIndex, colIndex } = coordinates;
+
+        // Header offset
+        await this.remote.down(rowIndex + 2);
         await this.remote.right(colIndex);
-        //expect correct app to be focused
     }
 
     /**
-     * Verift that button exist and focused
-     * Selecting the "Add to Favourites" button
+     * Selects the "Add to Favourites" button if applicable.
+     * Does NOT handle navigation after the action.
      */
     async addToFavorites() {
         const button = this.addToFavoritesButton;
 
         await expect(button).toBeVisible();
-        await expect(button).toHaveAttribute('data-focused', 'true', {
-            timeout: 5000,
-        });
+        await expect(button).toHaveAttribute('data-focused', 'true');
 
-        const text = await button.innerText();
+        const text = (await button.textContent())?.trim();
+
         if (text === 'Add to Favourites') {
+            console.log("button text : ", text);
+
             await this.remote.select();
-            await this.waitUntilHomeReady();
-            await this.remote.select();
-        } else {
-            console.log('App is already in favorites');
         }
     }
 
     /**
-     * doing actions to add app to favorites
-     * @param {*} featureName 
-     * @param {*} appName 
+     * Full flow to add an app to favorites from the Apps page.
      */
     async addAppToFavorites(featureName, appName) {
         await this.open();
         await this.goToApp(featureName, appName);
+
+        // Open app details
         await this.remote.select();
+
+        // Add to favorites if needed
         await this.addToFavorites();
     }
 
     /**
-     * Finds the coordinates (row and column index) of an app within a specific category.
-     * Performs a case-insensitive search for both category and app name.
-     * 
-     * @param {import('@playwright/test').Locator} listContainer - The Locator for the list container.
-     * @param {string} categoryName - The name of the category (e.g., "Sports").
-     * @param {string} appName - The name of the app (e.g., "Red Bull TV").
-     * @returns {Promise<{rowIndex: number, colIndex: number} | null>} The coordinates or null if not found.
+     * Finds the coordinates (row and column index) of an app within a category.
+     * Case-insensitive match for both category and app name.
      */
     async getAppCoordinates(listContainer, categoryName, appName) {
-        const lists = listContainer.locator(TITAN_OS_LOCATORS.LIST_ITEM_TESTID_PREFIX);
+        const lists = listContainer.locator(
+            TITAN_OS_LOCATORS.LIST_ITEM_TESTID_PREFIX
+        );
 
         const listsCount = await lists.count();
-        console.log("number of features : ", listsCount);
         const targetCategory = categoryName.trim().toLowerCase();
         const targetApp = appName.trim().toLowerCase();
 
@@ -86,26 +89,57 @@ export class AppsPage extends BasePage {
             const list = lists.nth(rIndex);
             const label = await list.getAttribute('aria-label');
 
-            if (label && label.trim().toLowerCase() === targetCategory) {
-                const items = list.locator(TITAN_OS_LOCATORS.LIST_ITEM_ROLE);
+            if (label?.trim().toLowerCase() === targetCategory) {
+                const items = list.locator(
+                    TITAN_OS_LOCATORS.LIST_ITEM_ROLE
+                );
                 const itemsCount = await items.count();
-                console.log("items : ", items);
 
                 for (let cIndex = 0; cIndex < itemsCount; cIndex++) {
-                    const item = items.nth(cIndex);
-                    const testId = await item.getAttribute('data-testid');
+                    const testId = await items
+                        .nth(cIndex)
+                        .getAttribute('data-testid');
 
-                    if (testId && testId.trim().toLowerCase() === targetApp) {
-                        console.log("Found app: ", targetApp);
-                        console.log("rowIndex: ", rIndex);
-                        console.log("colIndex: ", cIndex);
+                    if (testId?.trim().toLowerCase() === targetApp) {
                         return { rowIndex: rIndex, colIndex: cIndex };
                     }
                 }
             }
         }
-        return false;
+
+        return null;
+    }
+
+    /**
+     * Ensures the Apps page is fully loaded and usable.
+     * Readiness is defined by the mini banner being rendered
+     * with an active slide.
+     */
+    async waitUntilAppsReady() {
+        const miniBanner = this.page.locator(
+            TITAN_OS_LOCATORS.MINI_BANNER
+        );
+
+        await expect(async () => {
+            const banners = miniBanner.locator('[role="listitem"]');
+            const bannerCount = await banners.count();
+
+            if (bannerCount === 0) {
+                throw new Error('Mini banner items not rendered yet');
+            }
+
+            const activeFound = await banners.evaluateAll(items =>
+                items.some(el =>
+                    el.style.transform?.includes('translateX(0%)')
+                )
+            );
+
+            if (!activeFound) {
+                throw new Error('Mini banner active slide not ready yet');
+            }
+        }).toPass({
+            intervals: [1000, 2000, 5000],
+            timeout: 20000,
+        });
     }
 }
-
-
