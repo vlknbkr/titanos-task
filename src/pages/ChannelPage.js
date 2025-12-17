@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test'; 
+import { expect } from '@playwright/test';
 import { BasePage } from '../core/BasePage.js';
 import { TITAN_OS_LOCATORS } from '../locators/locators.js';
 
@@ -6,7 +6,6 @@ export class ChannelPage extends BasePage {
     constructor(page) {
         super(page);
 
-        // Locators (defined centrally for maintainability)
         this.menuItem = page.locator('[role="menuitem"][aria-label="Channels"]');
         this.activeChannel = page.locator(TITAN_OS_LOCATORS.CHANNELS_ACTIVE_TITLE);
         this.focusedChannel = page.locator(TITAN_OS_LOCATORS.CHANNELS_FOCUSED_ITEM);

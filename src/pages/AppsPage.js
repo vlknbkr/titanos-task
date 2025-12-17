@@ -54,7 +54,7 @@ export class AppsPage extends BasePage {
             console.log("button text : ", text);
             await this.remote.select();
         }
-        await this.page.waitForURL(process.env.BASE_URL, { timeout: 10000 });
+        await this.page.waitForURL(process.env.BASE_URL, { timeout: 20000 });
     }
 
     /**

@@ -3,13 +3,6 @@ import { TITAN_OS_LOCATORS } from '../locators/locators.js';
 import { expect } from "@playwright/test";
 
 
-/**
- * expectAppExistInFavList()
- * expectAppNotExistInFavList()
- * ensureAppExistInFavLİst()
- * ensureAppNotExistInFavList()
- */
-
 export class HomePage extends BasePage {
     constructor(page) {
         super(page);
@@ -57,15 +50,6 @@ export class HomePage extends BasePage {
         return -1;
     }
 
-    /**
-         * pre-condition
-         * * get app Xpath
-         * * wait till favList fully loaded
-         * action
-         * * deleteApp
-         * Assertion
-         * * expectAppNotExistInFavList(appName)
-         */
     async ensureAppNotExistInFavList(appName) {
         const app = this.favApp(appName);
         await this.waitUntilFavListLoad();
@@ -77,15 +61,7 @@ export class HomePage extends BasePage {
         await this.expectAppNotExistInFavList(appName);
     }
 
-    /**
-         * pre-condition
-         * * get app Xpath
-         * * wait till favList fully loaded
-         * action
-         * * deleteApp
-         * Assertion
-         * * expectAppExistInFavList(appName)
-         */
+
     async ensureAppExistInFavList(appName, featureName, appsPage) {
         const app = this.favApp(appName);
         await this.waitUntilFavListLoad();
@@ -144,13 +120,13 @@ export class HomePage extends BasePage {
     async waitUntilHomeReady() {
         await this.page.waitForTimeout(2000);
         await expect(async () => {
-            const containerCount = await this.favoritesContainer.count();
+            const containerCount = await this.favList.count();
 
             if (containerCount === 0) {
                 throw new Error('Favorites container not rendered yet');
             }
 
-            const itemsCount = await this.favoritesContainer
+            const itemsCount = await this.favList
                 .locator('[role="listitem"]')
                 .count();
 
