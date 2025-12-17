@@ -5,32 +5,30 @@ const appData = { featureName: 'Entertainment', appName: 'tabii' };
 test.describe.serial('Favorites Workflow', () => {
 
     test(`Add ${appData.appName} to favorites`, async ({ appsPage, homePage }) => {
+        // Pre-condition
         await homePage.open();
-
-        // Ensure precondition
-        await homePage.ensureAppNotInFavorites(appData.appName);
+        await homePage.ensureAppNotExistInFavList(appData.appName);
 
         // Action
-        await appsPage.addAppToFavorites(appData.featureName, appData.appName);
+        await appsPage.addAppToFavList(appData.featureName, appData.appName);
 
         // Assertion
-        await homePage.expectAppInFavorites(appData.appName);
+        await homePage.expectAppExistInFavList(appData.appName);
     });
 
     test(`Remove ${appData.appName} from favorites`, async ({ homePage, appsPage }) => {
+        // Pre-condition
         await homePage.open();
-
-        // Ensure precondition
-        await homePage.ensureAppInFavorites(
+        await homePage.ensureAppExistInFavList(
             appData.appName,
             appData.featureName,
             appsPage
         );
 
         // Action
-        await homePage.deleteApp(appData.appName);
+        await homePage.deleteAppFromFavlist(appData.appName);
 
         // Assertion
-        await homePage.expectAppNotInFavorites(appData.appName);
+        await homePage.expectAppNotExistInFavList(appData.appName);
     });
 });

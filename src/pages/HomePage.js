@@ -7,13 +7,13 @@ import { expect } from "@playwright/test";
  * expectAppExistInFavList()
  * expectAppNotExistInFavList()
  * ensureAppExistInFavLİst()
- * ensureAppNotExistInFavList
+ * ensureAppNotExistInFavList()
  */
 
 export class HomePage extends BasePage {
     constructor(page) {
         super(page);
-        this.favoriteList = this.page.locator(TITAN_OS_LOCATORS.FAVOURITE_APPS_CONTAINER);
+        this.favList = page.locator(TITAN_OS_LOCATORS.FAVOURITE_APPS_CONTAINER);
         this.favApp = (appName) => page.locator(TITAN_OS_LOCATORS.FAVORITE_APP(appName));
     }
 
@@ -22,7 +22,7 @@ export class HomePage extends BasePage {
         await this.waitUntilHomeReady();
     }
 
-    async goToApp(appName) {
+    async navigateToAppInFavList(appName) {
         const index = await this.getFavoriteAppIndex(appName);
         if (index < 0) {
             throw new Error(`Favorite app not found: ${appName}`);
@@ -30,54 +30,95 @@ export class HomePage extends BasePage {
         await this.remote.right(index);
     }
 
-    async deleteApp(appName) {
-        await this.goToApp(appName);
+    async deleteAppFromFavlist(appName) {
+        await this.navigateToAppInFavList(appName);
+
         console.log(`App ${appName} is in favorites, deleting...`);
         await this.remote.longPressSelect();
         await this.remote.down();
+        //add focused element check??? 
         await this.remote.select();
     }
 
     async getFavoriteAppIndex(appName) {
-        const lists = this.favoriteList.locator('[role="listitem"]');
+        const lists = this.favList.locator('[role="listitem"]');
         const count = await lists.count();
+
+        console.log(`number of app in Fav List found as ${count}`);
 
         for (let colIndex = 0; colIndex < count; colIndex++) {
             const element = lists.nth(colIndex);
             const label = await element.getAttribute('aria-label');
             if (label && label.trim().toLowerCase() === appName.trim().toLowerCase()) {
+                console.log(`Index of the ${appName} in Fav List IS ${colIndex}`)
                 return colIndex;
             }
         }
         return -1;
     }
 
-    async ensureAppNotInFavorites(appName) {
+    /**
+         * pre-condition
+         * * get app Xpath
+         * * wait till favList fully loaded
+         * action
+         * * deleteApp
+         * Assertion
+         * * expectAppNotExistInFavList(appName)
+         */
+    async ensureAppNotExistInFavList(appName) {
         const app = this.favApp(appName);
+        await this.waitUntilFavListLoad();
+
         if (await app.isVisible()) {
-            console.log("deleting function called")
-            await this.deleteApp(appName);
+            console.log(`${appName} exist in Fav List, deleting...`)
+            await this.deleteAppFromFavlist(appName);
         }
-        await this.expectAppNotInFavorites(appName);
+        await this.expectAppNotExistInFavList(appName);
     }
 
-    async ensureAppInFavorites(appName, featureName, appsPage) {
+    /**
+         * pre-condition
+         * * get app Xpath
+         * * wait till favList fully loaded
+         * action
+         * * deleteApp
+         * Assertion
+         * * expectAppExistInFavList(appName)
+         */
+    async ensureAppExistInFavList(appName, featureName, appsPage) {
         const app = this.favApp(appName);
+        await this.waitUntilFavListLoad();
+
         if (!await app.isVisible()) {
-            await appsPage.addAppToFavorites(featureName, appName);
+            console.log(`${appName} does not exist in FavList, adding...`)
+            await appsPage.addAppToFavList(featureName, appName);
+            await this.remote.select();
         }
-        await this.expectAppInFavorites(appName);
+        await this.waitUntilFavListLoad();
+        await this.expectAppExistInFavList(appName);
     }
 
-    async expectAppInFavorites(appName) {
-        const app = this.favApp(appName);
-        //await this.waitUntilHomeReady();
+    async waitUntilFavListLoad() {
+        await this.page.waitForTimeout(2000);
 
         await expect(async () => {
-            const visible = await app.isVisible();
-            if (!visible) {
-                throw new Error(`"${appName}" is not visible in favorites yet`);
-            }
+            expect(await this.favList.isVisible(), "Failed: Fav list container is NOT visible")
+        }).toPass({
+            intervals: [1000, 2000, 5000],
+            timeout: 20000,
+        });
+        console.log(`Success: Fav List container is visible.`);
+    }
+
+    async expectAppExistInFavList(appName) {
+        const app = this.favApp(appName);
+        console.log(await this.getFavoriteAppLabels())
+        await this.page.waitForTimeout(1000);
+        await this.waitUntilFavListLoad();
+
+        await expect(async () => {
+            expect(await app.isVisible(), `Failed: ${appName} is NOT exist in Fav List`)
         }).toPass({
             intervals: [500, 1000, 2000],
             timeout: 10000,
@@ -85,27 +126,26 @@ export class HomePage extends BasePage {
         console.log(`Success: "${appName}" is visible in favorites.`);
     }
 
-    async expectAppNotInFavorites(appName) {
+    async expectAppNotExistInFavList(appName) {
+        console.log(await this.getFavoriteAppLabels());
         const app = this.favApp(appName);
-        await this.page.reload();
-        await this.waitUntilHomeReady();
+        await this.page.waitForTimeout(1000);
+        await this.waitUntilFavListLoad();
 
         await expect(async () => {
-            const visible = await app.isVisible();
-            if (visible) {
-                throw new Error(`"${appName}" is still visible in favorites`);
-            }
+            expect(!await app.isVisible(), `Failed: ${appName} is NOT exist in Fav List`)
         }).toPass({
             intervals: [500, 1000, 2000],
             timeout: 10000,
         });
-        console.log(`Success: "${appName}" is no longer visible in favorites.`);
+        console.log(`Success: "${appName}" is no longer exist in Fav List.`);
     }
 
     async waitUntilHomeReady() {
         await this.page.waitForTimeout(2000);
         await expect(async () => {
             const containerCount = await this.favoritesContainer.count();
+
             if (containerCount === 0) {
                 throw new Error('Favorites container not rendered yet');
             }
@@ -122,5 +162,20 @@ export class HomePage extends BasePage {
             intervals: [1000, 2000, 5000],
             timeout: 20000,
         });
+        console.log(`Home Page is fully loaded.`)
+    }
+
+    async getFavoriteAppLabels() {
+        const items = this.favList.locator('[role="listitem"]');
+
+        // Wait until the list is at least rendered (optional but safe)
+        await items.first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => { });
+
+        return await items.evaluateAll(elements =>
+            elements
+                .map(el => el.getAttribute('aria-label'))
+                .filter(Boolean)
+                .map(label => label.trim())
+        );
     }
 }

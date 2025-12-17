@@ -5,9 +5,8 @@ import { expect } from '@playwright/test';
 export class AppsPage extends BasePage {
     constructor(page) {
         super(page);
-
         this.listSelector = this.page.locator(TITAN_OS_LOCATORS.LIST_SELECTOR);
-        this.addToFavoritesButton = this.page.locator(
+        this.addToFavBtnLocator = this.page.locator(
             TITAN_OS_LOCATORS.ADD_TO_FAVORITES_BUTTON
         );
     }
@@ -21,12 +20,13 @@ export class AppsPage extends BasePage {
      * Navigate to a specific app using remote navigation.
      * Cursor initially starts on the header, so we offset rows accordingly.
      */
-    async goToApp(featureName, itemName) {
+    async navigateToApp(featureName, itemName) {
         const coordinates = await this.getAppCoordinates(
             this.listSelector,
             featureName,
             itemName
         );
+        const headerOfset = 2;
 
         if (!coordinates) {
             throw new Error(`App not found: ${featureName} - ${itemName}`);
@@ -34,8 +34,7 @@ export class AppsPage extends BasePage {
 
         const { rowIndex, colIndex } = coordinates;
 
-        // Header offset
-        await this.remote.down(rowIndex + 2);
+        await this.remote.down(rowIndex + headerOfset);
         await this.remote.right(colIndex);
     }
 
@@ -43,33 +42,33 @@ export class AppsPage extends BasePage {
      * Selects the "Add to Favourites" button if applicable.
      * Does NOT handle navigation after the action.
      */
-    async addToFavorites() {
-        const button = this.addToFavoritesButton;
+    async addToFavoritesButton() {
+        const button = this.addToFavBtnLocator;
 
-        await expect(button).toBeVisible();
-        await expect(button).toHaveAttribute('data-focused', 'true');
+        await expect(button, "Add to Favorites button is not visible.").toBeVisible();
+        await expect(button, "Add to Favorites button does not focused.").toHaveAttribute('data-focused', 'true');
 
         const text = (await button.textContent())?.trim();
 
         if (text === 'Add to Favourites') {
             console.log("button text : ", text);
-
             await this.remote.select();
         }
+        await this.page.waitForURL(process.env.BASE_URL, { timeout: 10000 });
     }
 
     /**
      * Full flow to add an app to favorites from the Apps page.
      */
-    async addAppToFavorites(featureName, appName) {
+    async addAppToFavList(featureName, appName) {
         await this.open();
-        await this.goToApp(featureName, appName);
+        await this.navigateToApp(featureName, appName);
 
         // Open app details
         await this.remote.select();
 
         // Add to favorites if needed
-        await this.addToFavorites();
+        await this.addToFavoritesButton();
     }
 
     /**
@@ -116,6 +115,7 @@ export class AppsPage extends BasePage {
      * with an active slide.
      */
     async waitUntilAppsReady() {
+        await this.page.waitForTimeout(2000);
         const miniBanner = this.page.locator(
             TITAN_OS_LOCATORS.MINI_BANNER
         );
