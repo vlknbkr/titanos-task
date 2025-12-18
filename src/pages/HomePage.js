@@ -6,6 +6,8 @@ import { expect } from "@playwright/test";
 export class HomePage extends BasePage {
     constructor(page) {
         super(page);
+
+        this.menuItem = page.locator(TITAN_OS_LOCATORS.MENU_ITEM('Home'));
         this.favList = page.locator(TITAN_OS_LOCATORS.FAVOURITE_APPS_CONTAINER);
         this.favApp = (appName) => page.locator(TITAN_OS_LOCATORS.FAVORITE_APP(appName));
     }
@@ -89,7 +91,6 @@ export class HomePage extends BasePage {
 
     async expectAppExistInFavList(appName) {
         const app = this.favApp(appName);
-        console.log(await this.getFavoriteAppLabels())
         await this.page.waitForTimeout(1000);
         await this.waitUntilFavListLoad();
 
@@ -103,7 +104,6 @@ export class HomePage extends BasePage {
     }
 
     async expectAppNotExistInFavList(appName) {
-        console.log(await this.getFavoriteAppLabels());
         const app = this.favApp(appName);
         await this.page.waitForTimeout(1000);
         await this.waitUntilFavListLoad();
@@ -119,6 +119,9 @@ export class HomePage extends BasePage {
 
     async waitUntilHomeReady() {
         await this.page.waitForTimeout(2000);
+
+        await expect(this.menuItem).toHaveAttribute('aria-selected', 'true');
+
         await expect(async () => {
             const containerCount = await this.favList.count();
 
@@ -139,19 +142,5 @@ export class HomePage extends BasePage {
             timeout: 20000,
         });
         console.log(`Home Page is fully loaded.`)
-    }
-
-    async getFavoriteAppLabels() {
-        const items = this.favList.locator('[role="listitem"]');
-
-        // Wait until the list is at least rendered (optional but safe)
-        await items.first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => { });
-
-        return await items.evaluateAll(elements =>
-            elements
-                .map(el => el.getAttribute('aria-label'))
-                .filter(Boolean)
-                .map(label => label.trim())
-        );
     }
 }

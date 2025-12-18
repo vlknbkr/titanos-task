@@ -5,6 +5,8 @@ import { expect } from '@playwright/test';
 export class AppsPage extends BasePage {
     constructor(page) {
         super(page);
+
+        this.menuItem = page.locator(TITAN_OS_LOCATORS.MENU_ITEM('Apps'));
         this.listSelector = this.page.locator(TITAN_OS_LOCATORS.LIST_SELECTOR);
         this.addToFavBtnLocator = this.page.locator(
             TITAN_OS_LOCATORS.ADD_TO_FAVORITES_BUTTON
@@ -16,10 +18,6 @@ export class AppsPage extends BasePage {
         await this.waitUntilAppsReady();
     }
 
-    /**
-     * Navigate to a specific app using remote navigation.
-     * Cursor initially starts on the header, so we offset rows accordingly.
-     */
     async navigateToApp(featureName, itemName) {
         const coordinates = await this.getAppCoordinates(
             this.listSelector,
@@ -38,10 +36,6 @@ export class AppsPage extends BasePage {
         await this.remote.right(colIndex);
     }
 
-    /**
-     * Selects the "Add to Favourites" button if applicable.
-     * Does NOT handle navigation after the action.
-     */
     async addToFavoritesButton() {
         const button = this.addToFavBtnLocator;
 
@@ -51,15 +45,14 @@ export class AppsPage extends BasePage {
         const text = (await button.textContent())?.trim();
 
         if (text === 'Add to Favourites') {
-            console.log("button text : ", text);
             await this.remote.select();
+        } else {
+            throw new Error(`Unexpected favorite button state: "${text}"`);
         }
         await this.page.waitForURL(process.env.BASE_URL, { timeout: 20000 });
     }
 
-    /**
-     * Full flow to add an app to favorites from the Apps page.
-     */
+
     async addAppToFavList(featureName, appName) {
         await this.open();
         await this.navigateToApp(featureName, appName);
@@ -71,10 +64,7 @@ export class AppsPage extends BasePage {
         await this.addToFavoritesButton();
     }
 
-    /**
-     * Finds the coordinates (row and column index) of an app within a category.
-     * Case-insensitive match for both category and app name.
-     */
+
     async getAppCoordinates(listContainer, categoryName, appName) {
         const lists = listContainer.locator(
             TITAN_OS_LOCATORS.LIST_ITEM_TESTID_PREFIX
@@ -109,11 +99,6 @@ export class AppsPage extends BasePage {
         return null;
     }
 
-    /**
-     * Ensures the Apps page is fully loaded and usable.
-     * Readiness is defined by the mini banner being rendered
-     * with an active slide.
-     */
     async waitUntilAppsReady() {
         await this.page.waitForTimeout(2000);
         const miniBanner = this.page.locator(
@@ -123,6 +108,8 @@ export class AppsPage extends BasePage {
         await expect(async () => {
             const banners = miniBanner.locator('[role="listitem"]');
             const bannerCount = await banners.count();
+            
+            await expect(this.menuItem).toHaveAttribute('aria-selected', 'true');
 
             if (bannerCount === 0) {
                 throw new Error('Mini banner items not rendered yet');

@@ -1,8 +1,8 @@
 export const TITAN_OS_LOCATORS = {
 
     // GLOBAL
-    HOME_MENU_ITEM: 
-        '[role="menuitem"][aria-label="Home"][aria-selected]',
+    MENU_ITEM: (name) =>
+        `[role="menuitem"][aria-label="${name}"]`,
     GLOBAL_LOADER: '[data-loading="true"]',
 
     // HOME PAGE

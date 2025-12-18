@@ -6,6 +6,8 @@ import { TITAN_OS_LOCATORS } from '../locators/locators.js';
 export class SearchPage extends BasePage {
     constructor(page) {
         super(page);
+
+        this.menuItem = page.locator(TITAN_OS_LOCATORS.MENU_ITEM('Search'));
         this.searchInput = page.locator(TITAN_OS_LOCATORS.SEARCH_INPUT);
         this.categoryList = page.locator(TITAN_OS_LOCATORS.CATEGORY_LIST);
         this.categoryCard = (name) => page.locator(TITAN_OS_LOCATORS.CATEGORY_CARD(name));
@@ -44,6 +46,8 @@ export class SearchPage extends BasePage {
 
     async waitUntilSearchReady() {
         const items = this.categoryList.locator('[role="listitem"]');
+
+        await expect(this.menuItem).toHaveAttribute('aria-selected', 'true');
         await expect(async () => {
             const count = await items.count();
             if (count === 0) {

@@ -12,10 +12,6 @@ export class BasePage {
         throw new Error("Method 'open()' must be implemented by subclass.");
     }
 
-    /**
-     * Protected helper to navigate to a specific path using the BASE_URL.
-     * @param {string} path - The path to append to BASE_URL (e.g., 'apps')
-     */
     async goto(path = '') {
         await this.page.goto(
             `${process.env.BASE_URL}${path}`,
