@@ -3,8 +3,8 @@ import { TITAN_OS_LOCATORS } from '../locators/locators.js';
 import { expect } from '@playwright/test';
 
 export class AppsPage extends BasePage {
-    constructor(page) {
-        super(page);
+    constructor(page, options = {}) {
+        super(page, options);
 
         this.menuItem = page.locator(TITAN_OS_LOCATORS.MENU_ITEM('Apps'));
         this.listSelector = this.page.locator(TITAN_OS_LOCATORS.LIST_SELECTOR);
@@ -39,16 +39,23 @@ export class AppsPage extends BasePage {
     async addToFavoritesButton() {
         const button = this.addToFavBtnLocator;
 
-        await expect(button, "Add to Favorites button is not visible.").toBeVisible();
-        await expect(button, "Add to Favorites button does not focused.").toHaveAttribute('data-focused', 'true');
+        await expect(button, 'Add to Favorites button is not visible.').toBeVisible();
+        await expect(button, 'Add to Favorites button is not focused.').toHaveAttribute(
+            'data-focused', 'true'
+        );
 
-        const text = (await button.textContent())?.trim();
+        const text = await button.textContent();
 
         if (text === 'Add to Favourites') {
             await this.remote.select();
+        } else if (text === 'Remove from Favourites') {
+            return;
         } else {
             throw new Error(`Unexpected favorite button state: "${text}"`);
         }
+
+        await this.waitForSpaReady();
+
         await this.page.waitForURL(process.env.BASE_URL, { timeout: 20000 });
     }
 
@@ -57,10 +64,8 @@ export class AppsPage extends BasePage {
         await this.open();
         await this.navigateToApp(featureName, appName);
 
-        // Open app details
         await this.remote.select();
 
-        // Add to favorites if needed
         await this.addToFavoritesButton();
     }
 
@@ -100,33 +105,18 @@ export class AppsPage extends BasePage {
     }
 
     async waitUntilAppsReady() {
-        await this.page.waitForTimeout(2000);
-        const miniBanner = this.page.locator(
-            TITAN_OS_LOCATORS.MINI_BANNER
-        );
+        await this.waitForSpaReady();
 
-        await expect(async () => {
-            const banners = miniBanner.locator('[role="listitem"]');
-            const bannerCount = await banners.count();
-            
-            await expect(this.menuItem).toHaveAttribute('aria-selected', 'true');
+        await expect(this.menuItem).toHaveAttribute('aria-selected', 'true');
 
-            if (bannerCount === 0) {
-                throw new Error('Mini banner items not rendered yet');
-            }
+        const miniBanner = this.page.locator(TITAN_OS_LOCATORS.MINI_BANNER);
+        const items = miniBanner.locator('[role="listitem"]');
 
-            const activeFound = await banners.evaluateAll(items =>
-                items.some(el =>
-                    el.style.transform?.includes('translateX(0%)')
-                )
-            );
-
-            if (!activeFound) {
-                throw new Error('Mini banner active slide not ready yet');
-            }
-        }).toPass({
-            intervals: [1000, 2000, 5000],
-            timeout: 20000,
-        });
+        await expect
+            .poll(async () => await items.count(), {
+                timeout: 20000,
+                message: 'Mini banner did not render any items',
+            })
+            .toBeGreaterThan(0);
     }
 }
