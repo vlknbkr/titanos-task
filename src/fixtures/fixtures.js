@@ -6,7 +6,6 @@ import { SearchPage } from '../pages/SearchPage.js';
 import { ChannelPage } from '../pages/ChannelPage.js';
 import { FavoritesFlow } from '../flows/FavoritesFlow.js';
 
-// Extend base test with your page objects
 export const test = base.extend({
     /** @type {import('../utils/RemoteControl').RemoteControl} */
     remote: async ({ page }, use) => {

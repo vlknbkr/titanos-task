@@ -40,13 +40,11 @@ export class AppsPage extends BasePage {
         const button = this.addToFavBtnLocator;
 
         await expect(button, 'Add to Favorites button is not visible.').toBeVisible();
-        // Focus conventions differ across components; accept both.
         await expect(button, 'Add to Favorites button is not focused.').toHaveAttribute(
-            'data-focused',
-            /^(true|focused)$/
+            'data-focused', 'true'
         );
 
-        const text = (await button.textContent())?.trim() ?? '';
+        const text = await button.textContent();
 
         if (text === 'Add to Favourites') {
             await this.remote.select();
@@ -108,32 +106,17 @@ export class AppsPage extends BasePage {
 
     async waitUntilAppsReady() {
         await this.waitForSpaReady();
-        const miniBanner = this.page.locator(
-            TITAN_OS_LOCATORS.MINI_BANNER
-        );
 
-        await expect(async () => {
-            const banners = miniBanner.locator('[role="listitem"]');
-            const bannerCount = await banners.count();
+        await expect(this.menuItem).toHaveAttribute('aria-selected', 'true');
 
-            await expect(this.menuItem).toHaveAttribute('aria-selected', 'true');
+        const miniBanner = this.page.locator(TITAN_OS_LOCATORS.MINI_BANNER);
+        const items = miniBanner.locator('[role="listitem"]');
 
-            if (bannerCount === 0) {
-                throw new Error('Mini banner items not rendered yet');
-            }
-
-            const activeFound = await banners.evaluateAll(items =>
-                items.some(el =>
-                    el.style.transform?.includes('translateX(0%)')
-                )
-            );
-
-            if (!activeFound) {
-                throw new Error('Mini banner active slide not ready yet');
-            }
-        }).toPass({
-            intervals: [1000, 2000, 5000],
-            timeout: 20000,
-        });
+        await expect
+            .poll(async () => await items.count(), {
+                timeout: 20000,
+                message: 'Mini banner did not render any items',
+            })
+            .toBeGreaterThan(0);
     }
 }

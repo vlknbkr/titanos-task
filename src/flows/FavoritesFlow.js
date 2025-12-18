@@ -1,9 +1,4 @@
-/**
- * FavoritesFlow
- *
- * Orchestrates multi-page "favorites" scenarios.
- * Keeps Page Objects single-responsibility (no page->page dependency).
- */
+
 export class FavoritesFlow {
     /**
      * @param {import('../pages/HomePage.js').HomePage} homePage
@@ -24,10 +19,5 @@ export class FavoritesFlow {
         }
 
         await this.homePage.expectAppExistInFavList(appName);
-    }
-
-    async ensureFavoriteNotExists(appName) {
-        await this.homePage.open();
-        await this.homePage.ensureAppNotExistInFavList(appName);
     }
 }

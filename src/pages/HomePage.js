@@ -20,17 +20,11 @@ export class HomePage extends BasePage {
         await this.waitForHomeReady();
     }
 
-    /**
-     * Home-specific readiness (layered on top of BasePage.waitForSpaReady):
-     * - Home menu item selected
-     * - Favorites container rendered
-     */
     async waitForHomeReady() {
         await this.waitForSpaReady();
         await expect(this.menuItem).toHaveAttribute('aria-selected', 'true');
         await expect(this.favList, 'Favorites container is not visible').toBeVisible();
 
-        // Best-effort: ensure container is rendered (count > 0). Do NOT require items > 0 (could be empty).
         await expect
             .poll(async () => await this.favList.count(), { timeout: 20000 })
             .toBeGreaterThan(0);
@@ -62,14 +56,10 @@ export class HomePage extends BasePage {
         if (index < 0) {
             throw new Error(`Favorite app not found: ${appName}`);
         }
-        // Move focus horizontally to the tile
         await this.remote.right(index);
     }
 
-    /**
-     * Removes a favorite via context menu (long-press then select the "remove" action).
-     * We avoid blind sleeps and instead rely on "press + focus changes" primitives.
-     */
+
     async removeFavorite(appName) {
         await this.waitForHomeReady();
         await this.navigateToAppInFavList(appName);
@@ -77,7 +67,6 @@ export class HomePage extends BasePage {
         console.log(`Removing favorite: ${appName}`);
         await this.remote.longPressSelect();
 
-        //wait this.remote.pressAndWaitForFocusChange('ArrowDown');
         await this.remote.down();
         await this.remote.select();
 
@@ -100,7 +89,8 @@ export class HomePage extends BasePage {
 
     async waitUntilFavListLoad() {
         await this.waitForHomeReady();
-        await expect(this.favApp("Watch TV"), 'Favorites container is not visible').toBeVisible();
+        await expect(this.favApp("Watch TV"), 'Favorites container is not visible')
+            .toBeVisible();
     }
 
     async expectAppExistInFavList(appName) {
@@ -108,13 +98,13 @@ export class HomePage extends BasePage {
 
         await expect
             .poll(async () => await this.getFavoriteAppIndex(appName), { timeout: 20000 })
-            .toBeGreaterThanOrEqual(0);
+            .toBeGreaterThanOrEqual(1);
 
         console.log(`Favorite exists: ${appName}`);
     }
 
     async expectAppNotExistInFavList(appName) {
-        await this.open(); // container return true even app removed from the list
+        await this.open();
 
         await expect
             .poll(async () => await this.getFavoriteAppIndex(appName), { timeout: 20000 })

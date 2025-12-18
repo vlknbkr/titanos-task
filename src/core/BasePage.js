@@ -1,6 +1,5 @@
 import { expect } from '@playwright/test';
 import { RemoteControl } from '../utils/RemoteControl.js';
-import { TITAN_OS_LOCATORS } from '../locators/locators.js';
 
 
 export class BasePage {
@@ -24,7 +23,6 @@ export class BasePage {
         await this.waitForSpaReady();
     }
 
-
     async waitForSpaReady({ timeout = 20000 } = {}) {
         await expect(this.page.locator('#root'), 'App root is not visible').toBeVisible({
             timeout,
@@ -37,7 +35,6 @@ export class BasePage {
             });
         }
     }
-
 
     async expectFocused(locator, message = 'Expected element to have TV focus') {
         await expect(locator, message).toHaveAttribute('data-focused', /^(focused|true)$/);
