@@ -1,40 +1,40 @@
 import { test as base, expect } from '@playwright/test';
-import { RemoteControl } from '../utils/RemoteControl.js';
 import { HomePage } from '../pages/HomePage.js';
 import { AppsPage } from '../pages/AppsPage.js';
-import { SearchPage } from '../pages/SearchPage.js';
 import { ChannelPage } from '../pages/ChannelPage.js';
+import { SearchPage } from '../pages/SearchPage.js';
 import { FavoritesFlow } from '../flows/FavoritesFlow.js';
 
+/**
+ * Fixtures are kept explicit and minimal:
+ * - Provide ready-to-use page objects
+ * - Provide a shared flow for Favorites
+ * - Do NOT hide navigation or implicit side effects
+ */
 export const test = base.extend({
-    /** @type {import('../utils/RemoteControl').RemoteControl} */
-    remote: async ({ page }, use) => {
-        await use(new RemoteControl(page, { delay: 200, log: true }));
+    homePage: async ({ page }, use) => {
+        const home = new HomePage(page);
+        await use(home);
     },
 
-    /** @type {import('../pages/HomePage').HomePage} */
-    homePage: async ({ page, remote }, use) => {
-        await use(new HomePage(page, { remote }));
+    appsPage: async ({ page }, use) => {
+        const apps = new AppsPage(page);
+        await use(apps);
     },
 
-    /** @type {import('../pages/AppsPage').AppsPage} */
-    appsPage: async ({ page, remote }, use) => {
-        await use(new AppsPage(page, { remote }));
+    channelPage: async ({ page }, use) => {
+        const channel = new ChannelPage(page);
+        await use(channel);
     },
 
-    /** @type {import('../pages/SearchPage').SearchPage} */
-    searchPage: async ({ page, remote }, use) => {
-        await use(new SearchPage(page, { remote }));
+    searchPage: async ({ page }, use) => {
+        const search = new SearchPage(page);
+        await use(search);
     },
 
-    /** @type {import('../pages/ChannelPage').ChannelPage} */
-    channelPage: async ({ page, remote }, use) => {
-        await use(new ChannelPage(page, { remote }));
-    },
-
-    /** @type {import('../flows/FavoritesFlow').FavoritesFlow} */
-    favoritesFlow: async ({ homePage, appsPage }, use) => {
-        await use(new FavoritesFlow(homePage, appsPage));
+    favoritesFlow: async ({ page }, use) => {
+        const flow = new FavoritesFlow(page);
+        await use(flow);
     },
 });
 

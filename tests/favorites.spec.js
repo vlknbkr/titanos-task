@@ -1,29 +1,14 @@
-import { test } from "../src/fixtures/fixtures.js";
+import { test } from '../src/fixtures/fixtures.js';
 
-const appData = { featureName: 'Entertainment', appName: 'tabii' };
+test('favorites: add an app to favorites', async ({ favoritesFlow }) => {
+  await favoritesFlow.addAppToFavorites('Entertainment', 'YouTube');
+});
 
-test.describe.serial('Favorites Workflow', () => {
+test('favorites: protected app cannot be deleted (Watch TV)', async ({ favoritesFlow }) => {
+  await favoritesFlow.expectAppNotDeletable('Watch TV');
+});
 
-    test(`Add ${appData.appName} to favorites`, async ({ appsPage, homePage }) => {
-        // Pre-condition
-        await homePage.open();
-        await homePage.ensureAppNotExistInFavList(appData.appName);
-
-        // Action
-        await appsPage.addAppToFavList(appData.featureName, appData.appName);
-
-        // Assertion
-        await homePage.expectAppExistInFavList(appData.appName);
-    });
-
-    test(`Remove ${appData.appName} from favorites`, async ({ homePage, favoritesFlow }) => {
-        // Pre-condition
-        await favoritesFlow.ensureFavoriteExists(appData.featureName, appData.appName);
-
-        // Action
-        await homePage.deleteAppFromFavlist(appData.appName);
-
-        // Assertion
-        await homePage.expectAppNotExistInFavList(appData.appName);
-    });
+test('favorites: delete an app from favorites', async ({ favoritesFlow }) => {
+  // Assumption: YouTube was added (or exists). Flow is robust either way.
+  await favoritesFlow.removeAppFromFavorites('YouTube');
 });

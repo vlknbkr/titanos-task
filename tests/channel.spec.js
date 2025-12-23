@@ -1,12 +1,13 @@
-import { test } from "../src/fixtures/fixtures.js"; // Adjust path to your fixtures
+import { test, expect } from '../src/fixtures/fixtures.js';
 
-test.describe('Channels Page Verification', () => {
+test('channels: changing selection updates selected channel or info', async ({ channelPage }) => {
+  await channelPage.openChannels();
+  await channelPage.expectOnChannels();
 
-    test('should verify channels page is available to use', async ({ channelPage }) => {
-        // Pre-condition
-        await channelPage.open();
-        
-        // Assertion
-        await channelPage.verifyChannelsPageIsAvailable();
-    });
+  await channelPage.moveToNextChannelAndAssertChange('down');
+  await channelPage.moveToNextChannelAndAssertChange('down');
+  await channelPage.moveToNextChannelAndAssertChange('up');
+
+  // sanity: root stays visible
+  await expect(channelPage.root).toBeVisible();
 });

@@ -1,58 +1,43 @@
-
-
+/**
+ * RemoteControl helper:
+ * A minimal abstraction for TV-style navigation.
+ * We keep it intentionally simple and synchronous (await keypress).
+ */
 export class RemoteControl {
-    /**
-     * @param {import('@playwright/test').Page} page
-     * @param {{ delay?: number, log?: boolean }} [options]
-     */
-    constructor(page, options = {}) {
-        this.page = page;
-        this.delay = options.delay ?? 200;
-        this.log = options.log ?? true;
-        this.focusedSelector = '[data-focused="focused"], [data-focused="true"]';
-    }
+  /**
+   * @param {import('@playwright/test').Page} page
+   */
+  constructor(page) {
+    this.page = page;
+  }
 
-    _log(message) {
-        if (this.log) console.log(message);
-    }
+  async up(times = 1) {
+    for (let i = 0; i < times; i++) await this.page.keyboard.press('ArrowUp');
+  }
 
-    async press(key, times = 1) {
-        for (let i = 0; i < times; i++) {
-            await this.page.keyboard.press(key, { delay: this.delay });
-            this._log(`[Remote] ${key}`);
-        }
-    }
+  async down(times = 1) {
+    for (let i = 0; i < times; i++) await this.page.keyboard.press('ArrowDown');
+  }
 
-    async left(times = 1) {
-        await this.press('ArrowLeft', times);
-    }
+  async left(times = 1) {
+    for (let i = 0; i < times; i++) await this.page.keyboard.press('ArrowLeft');
+  }
 
-    async right(times = 1) {
-        await this.press('ArrowRight', times);
-    }
+  async right(times = 1) {
+    for (let i = 0; i < times; i++) await this.page.keyboard.press('ArrowRight');
+  }
 
-    async up(times = 1) {
-        await this.press('ArrowUp', times);
-    }
+  async select(times = 1) {
+    for (let i = 0; i < times; i++) await this.page.keyboard.press('Enter');
+  }
 
-    async down(times = 1) {
-        await this.press('ArrowDown', times);
-    }
-
-    async select() {
-        await this.press('Enter', 1);
-        this._log('[Remote] SELECT');
-    }
-
-    async back() {
-        await this.press('Backspace', 1);
-        this._log('[Remote] BACK');
-    }
-
-    async longPressSelect(duration = 2000) {
-        this._log(`[Remote] LONG SELECT (${duration}ms)`);
-        await this.page.keyboard.down('Enter');
-        await this.page.waitForTimeout(duration);
-        await this.page.keyboard.up('Enter');
-    }
+  /**
+   * "Long press" simulation for remote.
+   * Many TV UIs react to holding Enter, but DOM behavior varies.
+   */
+  async longPressEnter(ms = 900) {
+    await this.page.keyboard.down('Enter');
+    await this.page.waitForTimeout(ms);
+    await this.page.keyboard.up('Enter');
+  }
 }

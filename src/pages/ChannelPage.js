@@ -1,41 +1,85 @@
 import { expect } from '@playwright/test';
-import { BasePage } from '../core/BasePage.js';
-import { TITAN_OS_LOCATORS } from '../locators/locators.js';
+import { BasePage } from './BasePage.js';
 
+/**
+ * ChannelPage:
+ * - Navigate channels
+ * - Validate selected channel changes (meaningful state validation)
+ */
 export class ChannelPage extends BasePage {
-    constructor(page, options = {}) {
-        super(page, options);
+  /**
+   * @param {import('@playwright/test').Page} page
+   */
+  constructor(page) {
+    super(page);
 
-        this.menuItem = page.locator(TITAN_OS_LOCATORS.MENU_ITEM('Channels'));
-        this.activeChannel = page.locator(TITAN_OS_LOCATORS.CHANNELS_ACTIVE_TITLE);
-        this.focusedChannel = page.locator(TITAN_OS_LOCATORS.CHANNELS_FOCUSED_ITEM);
-        this.channelContainerReady = page.locator(TITAN_OS_LOCATORS.CHANNELS_CONTAINER_READY);
+    this.root = page.locator('[data-testid="channels-page"], [data-testid*="channel"], main').first();
+    this.channelsList = page.locator('[data-testid*="channel-list"], [data-testid*="channels"], [aria-label*="Channel"]').first();
+
+    this.channelTiles = page.locator('[data-testid^="channel-"], [data-testid*="channel-tile"], [data-testid*="channel-item"]');
+    this.channelInfo = page.locator('[data-testid*="channel-info"], [data-testid*="program-info"], [aria-label*="Now playing"]').first();
+  }
+
+  async openChannels() {
+    // Many apps have /channels route, but be safe with open base and then navigate
+    // If the app supports direct route, this will work.
+    await this.open('/channels').catch(async () => {
+      await this.open('/');
+    });
+
+    await this.waitForAppReady();
+  }
+
+  async expectOnChannels() {
+    await expect(this.root).toBeVisible({ timeout: 20_000 });
+  }
+
+  /**
+   * Get selected channel label
+   */
+  async getSelectedChannelLabel() {
+    // Prefer "focused" as selection state in TV UIs
+    const focused = this.page.locator(this.focusedAttributeSelector()).first();
+    if (await focused.isVisible().catch(() => false)) {
+      return (await this.getElementLabel(focused)).trim();
     }
-    async open() {
-        await this.goto('channels');
+
+    // fallback: aria-selected channel
+    const selected = this.page.locator('[aria-selected="true"]').first();
+    if (await selected.isVisible().catch(() => false)) {
+      return (await this.getElementLabel(selected)).trim();
     }
+    return '';
+  }
 
-    async verifyChannelsPageIsAvailable() {
-        await this.waitUntilChannelsReady();
+  async getChannelInfoText() {
+    if (await this.channelInfo.isVisible().catch(() => false)) {
+      return (await this.channelInfo.textContent())?.trim() ?? '';
     }
+    return '';
+  }
 
-    async waitUntilChannelsReady() {
-        await this.waitForSpaReady();
-        await expect(this.menuItem).toHaveAttribute('aria-selected', 'true');
+  /**
+   * Move selection and assert it really changed.
+   */
+  async moveToNextChannelAndAssertChange(direction = 'down') {
+    await this.expectOnChannels();
 
-        await expect(
-            this.channelContainerReady,
-            'Channels container is not ready'
-        ).toBeVisible();
+    const beforeLabel = await this.getSelectedChannelLabel();
+    const beforeInfo = await this.getChannelInfoText();
 
-        await expect(
-            this.activeChannel,
-            'Active channel item not rendered'
-        ).toBeVisible();
+    if (direction === 'down') await this.remote.down();
+    if (direction === 'up') await this.remote.up();
 
-        await expect(
-            this.focusedChannel,
-            'Active channel is not focused'
-        ).toBeVisible();
-    }
+    // Assert selection label changes or channel info updates
+    await expect(async () => {
+      const afterLabel = await this.getSelectedChannelLabel();
+      const afterInfo = await this.getChannelInfoText();
+
+      const changedLabel = afterLabel && afterLabel !== beforeLabel;
+      const changedInfo = afterInfo && afterInfo !== beforeInfo;
+
+      expect(changedLabel || changedInfo, `Expected channel selection/info to change after moving ${direction}`).toBeTruthy();
+    }).toPass({ timeout: 12_000 });
+  }
 }
