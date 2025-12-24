@@ -1,13 +1,26 @@
 import { test, expect } from '../src/fixtures/fixtures.js';
-const offset = 2;
+const testData = { categoryName: "News", appName: "CGTN" };
 
 test.describe('Favorites', () => {
-    test('Remove from Favorites', async ({ homePage }) => {
-        await homePage.open();
-        await homePage.navigate('Apps');
-        await homePage.openEditModeOnFavApp('Netflix');
+    test('Remove from Favorites', async ({ homePage, appsPage }) => {
+        //await homePage.open();
+        //await homePage.navigate('Apps');
+        await appsPage.open();
+        await appsPage.focusApp(testData.categoryName, testData.appName);
+        await appsPage.addFocusedAppToFavApps(testData.categoryName, testData.appName);
+
+        await homePage.isLoaded();
+
+        await expect
+            .poll(() => homePage.favAppList.exists(testData.appName), { timeout: 15000 })
+            .toBe(true);
+
+        await homePage.openEditModeOnFavApp(testData.appName);
         await homePage.removeFocusedFavApp();
 
-        await expect(homePage.favAppList.appLocator('Netflix')).toHaveCount(0);
+        await expect.poll(() => homePage.favAppList
+            .appLocator(testData.appName)
+            .count(), { timeout: 15000 })
+            .toBe(0);
     });
 });

@@ -4,37 +4,65 @@ import { CategoryAppItemComponent } from './CategoryAppItemComponent.js';
 
 export class CategoryListComponent extends BaseComponent {
     /**
-     * Returns all category rows under lists-container.
-     * Each row is: [data-testid^="list-item-"][role="list"]
+     * root MUST be: page.locator('[data-testid="lists-container"]')
      */
-    categories() {
-        return this.root.locator('[data-testid^="list-item-"][role="list"]');
+    constructor(root, page) {
+        super(root, page);
+
+        this.categoriesLocator = this.root.locator(
+            '[data-testid^="list-item-app_list-"][role="list"][aria-label]'
+        );
+
+        this.categoryLocator = (name) =>
+            this.root.locator(
+                `[data-testid^="list-item-app_list-"][role="list"][aria-label="${name}"]`
+            );
     }
 
-    async countCategories() {
-        return this.categories().count();
+    getAllCategories() {
+        return this.categoriesLocator;
+    }
+
+    async getCategoriesCount() {
+        return this.getAllCategories().count();
+    }
+
+    getCategoryLocator(name) {
+        return this.categoryLocator(name).first();
     }
 
     /**
      * @param {number} i
      */
-    categoryByIndex(i) {
-        const row = this.categories().nth(i);
+    getCategoryByIndex(i) {
+        const row = this.getAllCategories().nth(i);
         return new CategoryAppItemComponent(row, this.page);
     }
 
-    
     /**
-     * Category row is unique by aria-label (e.g. "Featured Apps", "Video", ...)
      * @param {string} categoryName
      */
-    categoryByName(categoryName) {
-        const row = this.root
-            .locator(
-                `[data-testid^="list-item-"][role="list"][aria-label="${categoryName}"]`
-            )
-            .first();
-
+    getCategoryByName(categoryName) {
+        const row = this.getCategoryLocator(categoryName);
         return new CategoryAppItemComponent(row, this.page);
+    }
+
+    /**
+     * Returns index of category row within lists-container, -1 if not found
+     * @param {string} categoryName
+     */
+    async indexCategory(categoryName) {
+        return this.getAllCategories().evaluateAll((els, name) => {
+            return els.findIndex((el) => el.getAttribute('aria-label') === name);
+        }, categoryName);
+    }
+
+    /**
+     * Returns index of focused category row, -1 if none
+     */
+    async focusedIndexCategory() {
+        return this.getAllCategories().evaluateAll((els) => {
+            return els.findIndex((el) => el.getAttribute('data-focused') === 'focused');
+        });
     }
 }

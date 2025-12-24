@@ -24,9 +24,7 @@ export class FavAppListComponent extends BaseComponent {
   }
 
   appLocator(appName) {
-    return this.list().locator(
-      `[role="listitem"][data-testid="${appName}"][aria-hidden="false"]`
-    );
+    return this.list().locator(`[role="listitem"][data-testid="${appName}"]`).first();
   }
 
   async exists(appName) {
