@@ -1,6 +1,5 @@
 import { expect } from '@playwright/test';
 import { BasePage } from './BasePage.js';
-import { MenuComponent } from '../components/MenuComponent.js';
 import { FavAppListComponent } from '../components/FavAppListComponent.js';
 
 export class HomePage extends BasePage {
@@ -9,7 +8,6 @@ export class HomePage extends BasePage {
    */
   constructor(page) {
     super(page);
-    this.menu = new MenuComponent(this.page.locator('[role="menubar"]'));
     this.favAppList = new FavAppListComponent(this.page.locator('[data-testid="user-apps"]'));
     this.favList = this.favAppList.locator('[role="list"][aria-label="Favourite Apps"]');
     this.watchTV = this.favList.locator('[role="listitem"][aria-label="Watch TV"]');
@@ -23,11 +21,6 @@ export class HomePage extends BasePage {
   async open() {
     await this.page.goto("");
     await this.isLoaded();
-  }
-
-  async goToMenuItem() {
-    await this.menu.navigateTo('Apps', this.remote);
-
   }
 
   async isLoaded() {

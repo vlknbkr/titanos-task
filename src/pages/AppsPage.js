@@ -1,6 +1,5 @@
 import { BasePage } from './BasePage.js';
 import { expect } from '@playwright/test';
-import { MenuComponent } from '../components/MenuComponent.js';
 import { CategoryListComponent } from '../components/CategoryListComponent.js';
 
 export class AppsPage extends BasePage {
