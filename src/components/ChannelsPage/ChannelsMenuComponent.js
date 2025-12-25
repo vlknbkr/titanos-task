@@ -6,7 +6,8 @@ export class ChannelsMenuComponent {
     group: '[role="group"][aria-label="Channels menu"]',
     backBtn: '[data-testid="channels-back-button"]',
     myChannelsBtn: '[data-testid="channels-open-my-channels-button"]',
-    addRemoveBtn: '[data-testid="channels-delete-from-my-channels-button"]',
+    addBtn: '[data-testid="channels-add-to-my-channels-button"]',
+    deleteBtn: '[data-testid="channels-delete-from-my-channels-button"]',
     epgBtn: '[data-testid="channels-open-epg-button"]'
   };
 
@@ -18,7 +19,7 @@ export class ChannelsMenuComponent {
   // Lazy locators
   menu() { return this.root.locator(ChannelsMenuComponent.SELECTORS.container); }
   group() { return this.menu().locator(ChannelsMenuComponent.SELECTORS.group); }
-  
+
   backButton() { return this.menu().locator(ChannelsMenuComponent.SELECTORS.backBtn); }
   myChannelsButton() { return this.menu().locator(ChannelsMenuComponent.SELECTORS.myChannelsBtn); }
   addRemoveButton() { return this.menu().locator(ChannelsMenuComponent.SELECTORS.addRemoveBtn); }
@@ -30,7 +31,17 @@ export class ChannelsMenuComponent {
     await expect(this.menu(), 'Channels menu content-ready should be true')
       .toHaveAttribute('data-content-ready', 'true');
   }
+  
+  favoriteToggleButton() {
+    return this.menu().locator(`${ChannelsMenuComponent.SELECTORS.addBtn}, ${ChannelsMenuComponent.SELECTORS.deleteBtn}`);
+  }
 
+  async getToggleAction() {
+    const btn = this.favoriteToggleButton();
+    const testId = await btn.getAttribute('data-testid');
+    // Returns 'add' or 'delete' based on the ID present
+    return testId.includes('add') ? 'add' : 'delete';
+  }
   async isClosed() {
     const transform = await this.group().evaluate(el => el.style.transform || '');
     return transform.includes('translateX(-100%)'); // Matches DOM style
@@ -38,9 +49,15 @@ export class ChannelsMenuComponent {
 
   async waitUntilOpen() {
     await this.waitUntilReady();
-    await expect
-      .poll(() => this.isClosed(), { timeout: 15000, message: 'Channels menu did not open' })
-      .toBe(false);
+
+    // Wait for the animation to move beyond the "closed" transform
+    await expect.poll(() => this.isClosed(), {
+      timeout: 15000,
+      message: 'Channels menu animation did not start'
+    }).toBe(false);
+
+    // Focus assertion removed from here to allow the Page Object 
+    // to handle the focus handover.
   }
 
   async waitUntilClosed() {
