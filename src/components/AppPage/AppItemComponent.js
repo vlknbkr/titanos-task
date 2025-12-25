@@ -2,26 +2,19 @@
 import { BaseComponent } from '../BasePage/BaseComponent';
 
 export class AppItemComponent extends BaseComponent {
+    static SELECTORS = {
+        focusedAttr: 'data-focused',
+        focusedValue: 'focused'
+    };
+
     async getName() {
-        // Prefer stable contract: aria-label (matches app name in your DOM)
         const aria = await this.root.getAttribute('aria-label');
-        if (aria && aria.trim()) return aria.trim();
-
-        // Fallbacks
-        const testId = await this.getDataTestId();
-        if (testId && testId.trim()) return testId.trim();
-
-        const txt = await this.root.textContent();
-        return (txt ?? '').trim();
-    }
-
-    async getDataTestId() {
-        return this.root.getAttribute('data-testid');
+        return (aria ?? '').trim();
     }
 
     async isFocused() {
-        const focused = await this.root.getAttribute('data-focused');
-        return focused === 'focused' || focused === 'true';
+        const focused = await this.root.getAttribute(AppItemComponent.SELECTORS.focusedAttr);
+        return focused === AppItemComponent.SELECTORS.focusedValue;
     }
 
     locator() {

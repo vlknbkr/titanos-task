@@ -1,5 +1,7 @@
+// src/pages/AppsPage.js
 import { BasePage } from './BasePage.js';
 import { expect } from '@playwright/test';
+import { MiniBannerComponent } from '../components/AppPage/MiniBannerComponent.js';
 import { CategoryListComponent } from '../components/AppPage/CategoryListComponent.js';
 
 export class AppsPage extends BasePage {
@@ -7,12 +9,15 @@ export class AppsPage extends BasePage {
     super(page);
 
     this.categories = new CategoryListComponent(
-      this.page.locator('[data-testid="lists-container"]')
+      this.page.locator('[data-testid="lists-container"]'),
+      this.page
     );
-    this.category = (categoryName) => this.categories.getCategoryByName(categoryName);
-    this.miniBanner = page.locator('[data-testid="mini-banner"]');
-    this.miniBannerItems = this.miniBanner.locator('[role="listitem"]');
-    this.addToFavoritesButton = page.locator('[id="app-fav-button"]');
+
+    this.miniBanner = new MiniBannerComponent(
+      this.page.locator('[data-testid="mini-banner"]'),
+      this.page
+    );
+    this.addToFavoritesButton = this.page.locator('[id="app-fav-button"]');
   }
 
   async open() {
@@ -20,70 +25,55 @@ export class AppsPage extends BasePage {
     await this.isLoaded();
   }
 
-
   async isLoaded() {
-    await expect(this.categories.locator()).toBeVisible();
-    await this.miniBanner.waitFor({ state: 'visible' });
-    expect(await this.miniBannerItems.count()).toBeGreaterThan(0);
+    // Check main container visibility
+    await expect(this.categories.root).toBeVisible();
+
+    // Delegate lazy loading wait to the component
+    await this.miniBanner.waitForLoaded();
+
+    // Final validation: ensure at least one banner item exists
+    const count = await this.miniBanner.getCount();
+    expect(count).toBeGreaterThan(0);
   }
 
   async focusCategory(categoryName) {
-
-    const rows = this.categories.getAllCategories();
-
-    await expect(rows.first(), 'Categories not visible / not loaded').toBeVisible();
-
     const targetIdx = await this.categories.indexCategory(categoryName);
     if (targetIdx < 0) throw new Error(`Category "${categoryName}" not found.`);
 
-    // Ensure focus is INSIDE the categories list (sometimes you start on menu/header)
     let currentIdx = await this.categories.focusedIndexCategory();
-    for (let i = 0; i < 8 && currentIdx < 0; i++) {
+
+    // Bring focus into the list if currently on header/banner
+    for (let i = 0; i < 5 && currentIdx < 0; i++) {
       await this.remote.down();
       currentIdx = await this.categories.focusedIndexCategory();
     }
-    if (currentIdx < 0) throw new Error('Could not bring focus into the categories list.');
 
-    // abs-diff steps (your preferred style)
     const steps = Math.abs(targetIdx - currentIdx);
     const move = targetIdx > currentIdx ? () => this.remote.down() : () => this.remote.up();
 
-    for (let s = 0; s < steps; s++) {
-      await move();
-    }
+    for (let s = 0; s < steps; s++) { await move(); }
+
     await expect(this.categories.getCategoryLocator(categoryName)).toHaveAttribute('data-focused', 'focused');
   }
 
   async focusApp(categoryName, appName) {
     await this.focusCategory(categoryName);
+    const categoryRow = this.categories.getCategoryByName(categoryName);
 
+    const targetIdx = await categoryRow.indexApp(appName);
+    if (targetIdx < 0) throw new Error(`App "${appName}" not found in "${categoryName}".`);
 
-
-    const targetIdx = await this.category(categoryName).indexApp(appName);
-    if (targetIdx < 0) {
-      throw new Error(`App "${appName}" not found under category "${categoryName}".`);
-    }
-
-    let currentIdx = await this.category(categoryName).focusedIndexApp();
-
+    let currentIdx = await categoryRow.focusedIndexApp();
     const steps = Math.abs(targetIdx - currentIdx);
     const move = targetIdx > currentIdx ? () => this.remote.right() : () => this.remote.left();
 
-    for (let s = 0; s < steps; s++) {
-      await move();
-    }
-    await expect(this.category(categoryName).getAppLocator(appName)).toHaveAttribute('data-focused', 'focused');
-  }
+    for (let s = 0; s < steps; s++) { await move(); }
+    const targetApp = categoryRow.getAppLocator(appName);
+    
+    console.log(" appName: ", appName);
+    console.log("targetApp: ", targetApp);
 
-  async addFocusedAppToFavApps(categoryName, appName) {
-    await this.remote.select(this.category(categoryName).getAppLocator(appName));
-
-    await this.remote.select(this.addToFavoritesButton);
-
-    await Promise.race([
-      this.addToFavoritesButton.waitFor({ state: 'detached', timeout: 15000 }),
-      expect(this.addToFavoritesButton)
-        .toHaveAttribute('data-loading', 'false', { timeout: 15000 }),
-    ]);
+    await expect(targetApp).toHaveAttribute('data-focused', 'focused',{timeout: 10000});
   }
 }

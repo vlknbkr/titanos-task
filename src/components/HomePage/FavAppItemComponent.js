@@ -1,25 +1,30 @@
+// src/components/FavAppItemComponent.js
 import { AppItemComponent } from '../AppPage/AppItemComponent.js';
 
 export class FavAppItemComponent extends AppItemComponent {
+  static SELECTORS = {
+    removeButton: '[data-testid="editmode-remove-app"]',
+    focusedAttr: 'data-focused',
+    disabledValue: 'disabled'
+  };
+
+  constructor(root, page) {
+    super(root, page);
+    this.removeButtonLocator = this.root.locator(FavAppItemComponent.SELECTORS.removeButton);
+  }
+
   removeButton() {
-    // Visible only in edit mode (after long press)
-    return this.root.locator('[data-testid="editmode-remove-app"]');
+    return this.removeButtonLocator;
   }
 
   async isRemoveDisabled() {
-    const btn = this.removeButton();
+    const focusState = await this.removeButtonLocator.getAttribute(FavAppItemComponent.SELECTORS.focusedAttr);
+    
+    // DOM check: <div data-testid="editmode-remove-app" data-focused="disabled">
+    if (focusState?.toLowerCase() === FavAppItemComponent.SELECTORS.disabledValue) {
+      return true;
+    }
 
-    // TitanOS often encodes disabled state via data-focused="disabled"
-    const focusState = (await btn.getAttribute('data-focused'))?.toLowerCase();
-    if (focusState === 'disabled') return true;
-
-    // Fallbacks (defensive)
-    const ariaDisabled = (await btn.getAttribute('aria-disabled'))?.toLowerCase();
-    if (ariaDisabled === 'true') return true;
-
-    const disabledAttr = await btn.getAttribute('disabled');
-    if (disabledAttr !== null) return true;
-
-    return false;
+    return await this.removeButtonLocator.isDisabled();
   }
 }

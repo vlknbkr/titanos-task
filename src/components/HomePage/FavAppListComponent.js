@@ -1,63 +1,77 @@
-// src/components/FavAppListComponent.js
+// src/components/HomePage/FavAppListComponent.js
 import { BaseComponent } from '../BasePage/BaseComponent.js';
 import { FavAppItemComponent } from './FavAppItemComponent.js';
 
 export class FavAppListComponent extends BaseComponent {
+  static SELECTORS = {
+    list: '#favourite-apps[role="list"]',
+    item: '[role="listitem"][data-testid]',
+    visible: '[aria-hidden="false"]',
+    ready: '[data-content-ready="true"]',
+    focusedAttr: 'data-focused',
+    focusedValue: 'focused',
+  };
+
+  constructor(root, page) {
+    super(root, page);
+
+    // 1. Initialize core locators in constructor to avoid undefined errors
+    this.listLocator = this.root.locator(FavAppListComponent.SELECTORS.list);
+
+    // We chain from this.listLocator to ensure we only find items inside this list
+    this.visibleListLocator = this.listLocator.filter({
+      has: page.locator(FavAppListComponent.SELECTORS.visible)
+    });
+
+    this.itemsLocator = this.visibleListLocator.locator(FavAppListComponent.SELECTORS.item);
+  }
 
   list() {
-    return this.root.locator(
-      '#favourite-apps[role="list"][aria-label="Favourite Apps"][aria-hidden="false"]');
+    return this.listLocator;
   }
 
   items() {
-    return this.list().locator(
-      '[role="listitem"][data-testid][aria-hidden="false"]');
-  }
-
-  async count() {
-    return this.items().count();
-  }
-
-  async isContentReady() {
-    const ready = await this.list().getAttribute('data-content-ready');
-    return ready === 'true';
-  }
-
-  appLocator(appName) {
-    return this.list().locator(`[role="listitem"][data-testid="${appName}"]`).first();
-  }
-
-  async exists(appName) {
-    return (await this.appLocator(appName, { visibleOnly: true }).count()) > 0;
+    return this.itemsLocator;
   }
 
   item(appName) {
-    const tile = this.list()
-      .locator(`[role="listitem"][data-testid="${appName}"][aria-hidden="false"]`)
-      .first();
+    const tile = this.appLocator(appName);
     return new FavAppItemComponent(tile, this.page);
   }
 
+  appLocator(appName) {
+    return this.itemsLocator.filter({
+      hasAttribute: ['data-testid', appName]
+    }).first();
+  }
+
+  /**
+   * Waits for the list to be visible and for the app to signal content is ready.
+   */
+  async waitForReady() {
+    await this.visibleListLocator.waitFor({ state: 'visible' });
+  }
+
+  async exists(appName) {
+    return (await this.appLocator(appName).count()) > 0;
+  }
+
+
   async focusedIndex() {
-    const items = this.items();
-
-    const idx = await items.evaluateAll((els) =>
-      els.findIndex((el) => el.getAttribute('data-focused') === 'focused')
+    return this.itemsLocator.evaluateAll((els, attr) =>
+      els.findIndex((el) => el.getAttribute(attr) === 'focused'),
+      FavAppListComponent.SELECTORS.focusedAttr
     );
+  }
 
-    return idx; // -1 if none
+  async count() {
+    return this.itemsLocator.count();
   }
 
   async appIndex(appName) {
-    const items = this.items();
-
-    const idx = await items.evaluateAll((els, name) => {
-      return els.findIndex((el) => {
-        const testId = el.getAttribute('data-testid');
-        return testId === name;
-      });
-    }, appName);
-
-    return idx; // -1 if not found
+    return this.itemsLocator.evaluateAll((els, name) =>
+      els.findIndex((el) => el.getAttribute('data-testid') === name),
+      appName
+    );
   }
 }

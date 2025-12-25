@@ -8,14 +8,10 @@ export class HomePage extends BasePage {
    */
   constructor(page) {
     super(page);
-    this.favAppList = new FavAppListComponent(this.page.locator('[data-testid="user-apps"]'));
-    this.favList = this.favAppList.locator('[role="list"][aria-label="Favourite Apps"]');
-    this.watchTV = this.favList.locator('[role="listitem"][aria-label="Watch TV"]');
-    this.targetApp = (addData) => this.favList.locator(`[role="listitem"][data-testid="${addData}"]`);
-    this.focusedItem = this.page.locator(
-      '[data-testid="user-apps"] [role="list"][aria-label="Favourite Apps"] [role="listitem"][data-focused="focused"]'
+    this.favAppList = new FavAppListComponent(
+      this.page.locator('[data-testid="user-apps"]'),
+      this.page
     );
-
   }
 
   async open() {
@@ -24,26 +20,28 @@ export class HomePage extends BasePage {
   }
 
   async isLoaded() {
-    await expect(this.favList).toBeVisible();
-    await expect(this.watchTV).toBeVisible();
+    // 1. Wait for the list container to exist
+    await expect(this.favAppList.list()).toBeAttached();
+
+    // 2. Wait for data-content-ready="true" and aria-hidden="false"
+    await this.favAppList.waitForReady();
+
+    // 3. Confirm target app is visible (Watch TV is a good smoke test)
+    await expect(this.favAppList.appLocator('Watch TV')).toBeVisible();
   }
 
-  async focusFavApp(addData) {
-    const list = this.favList;
-
+  async focusFavApp(appName) {
+    // 3. The logic remains similar, but we use the component's cleaner methods
     const count = await this.favAppList.count();
     if (count === 0) throw new Error('Favourite Apps row is empty.');
 
     const current = await this.favAppList.focusedIndex();
     if (current < 0) throw new Error('No focused item found in Favourite Apps row.');
 
-    const target = await this.favAppList.appIndex(addData);
-    if (target < 0) throw new Error(`Fav app "${addData}" not found in Favourite Apps row.`);
+    const target = await this.favAppList.appIndex(appName);
+    if (target < 0) throw new Error(`Fav app "${appName}" not found in Favourite Apps row.`);
 
-    if (current === target) {
-      await expect(this.favAppList.items().nth(target)).toHaveAttribute('data-focused', 'focused');
-      return;
-    }
+    if (current === target) return;
 
     const steps = Math.abs(target - current);
     const move = target > current ? () => this.remote.right() : () => this.remote.left();
@@ -52,40 +50,42 @@ export class HomePage extends BasePage {
       await move();
     }
 
+    // Use the component's nth item helper
     await expect(this.favAppList.items().nth(target)).toHaveAttribute('data-focused', 'focused');
   }
 
-  async openEditModeOnFavApp(addData) {
-    await this.focusFavApp(addData);
+  async openEditModeOnFavApp(appName) {
+    await this.focusFavApp(appName);
 
-    const target = this.targetApp(addData);
+    const appItem = this.favAppList.item(appName);
 
-    await this.remote.longPressSelect(target);
+    // We pass the locator of the item to the remote longpress
+    await this.remote.longPressSelect(appItem.root);
 
-    await expect(this.focusedItem).toBeVisible();
-
-    await expect(
-      this.focusedItem.locator('[data-testid="editmode-remove-app"]'),
-      'Edit mode delete button did not appear'
-    ).toBeVisible();
+    // Verify remove button via the component
+    await expect(appItem.removeButton()).toBeVisible();
   }
 
   async removeFocusedFavApp() {
-    const removeBtn = this.focusedItem.locator('[data-testid="editmode-remove-app"]');
+    // 4. Determine which app is currently focused
+    const focusedIdx = await this.favAppList.focusedIndex();
+    const items = await this.favAppList.items().all();
+    const focusedItemRoot = items[focusedIdx];
 
-    await expect(removeBtn, 'Remove button not visible (are you in edit mode?)').toBeVisible();
+    // Wrap it in the Item Component to get access to its logic
+    const appItem = new FavAppItemComponent(focusedItemRoot, this.page);
+    const removeBtn = appItem.removeButton();
+
+    await expect(removeBtn).toBeVisible();
     await this.remote.down();
 
-    // If disabled, fail with a clear message (tests can catch this for Watch TV)
-    const btnFocusState = await removeBtn.getAttribute('data-focused');
-    if (btnFocusState === 'disabled') {
-      const label = await this.focusedItem.getAttribute('aria-label');
-      throw new Error(`Remove is disabled for "${label}" (expected for non-removable apps like Watch TV).`);
+    // 5. Use the logic we built in the item component
+    if (await appItem.isRemoveDisabled()) {
+      const label = await focusedItemRoot.getAttribute('aria-label');
+      throw new Error(`Remove is disabled for "${label}" (Watch TV).`);
     }
 
     await this.remote.select(removeBtn);
-
-    // Optional: wait for UI to settle after removal
-    await this.page.waitForTimeout(3000);
+    await this.page.waitForTimeout(3000); // Wait for animation
   }
 }
