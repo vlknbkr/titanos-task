@@ -1,24 +1,21 @@
-// src/components/SearchBarComponent.js
+// src/components/SearchPage/SearchBarComponent.js
 import { BaseComponent } from '../BasePage/BaseComponent.js';
 
 export class SearchBarComponent extends BaseComponent {
-  /**
-   * @param {import('@playwright/test').Locator} root
-   * @param {import('@playwright/test').Page} page
-   */
+  static SELECTORS = {
+    container: '._searchBar_1n1az_1',
+    inputBox: '#search-input',
+    input: 'input',
+    clearBtn: '#search-input-clear'
+  };
+
   constructor(root, page) {
     super(root, page);
   }
 
-  inputBox() {
-    return this.root.locator('#search-input');
-  }
-
-  input() {
-    return this.inputBox().locator('input');
-  }
-
-  clearButton() {
-    return this.root.locator('#search-input-clear');
-  }
+  // Lazy locators chained from this.root
+  container() { return this.root.locator(SearchBarComponent.SELECTORS.container); }
+  inputBox() { return this.container().locator(SearchBarComponent.SELECTORS.inputBox); }
+  input() { return this.inputBox().locator(SearchBarComponent.SELECTORS.input); }
+  clearButton() { return this.container().locator(SearchBarComponent.SELECTORS.clearBtn); }
 }

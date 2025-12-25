@@ -1,56 +1,41 @@
-// src/components/GenresGridComponent.js
+// src/components/SearchPage/GenresGridComponent.js
 import { expect } from '@playwright/test';
+import { BaseComponent } from '../BasePage/BaseComponent.js';
 
-export class GenresGridComponent {
-    /**
-     * @param {import('@playwright/test').Page} page
-     */
-    constructor(page) {
-        this.page = page;
-    }
+export class GenresGridComponent extends BaseComponent {
+  static SELECTORS = {
+    list: '#search-genres[role="list"]',
+    tile: '[role="listitem"]',
+    card: '._mediaCard_10koe_1', // Focus target in DOM
+    focused: '[data-focused="focused"]'
+  };
 
-    list() {
-        // Stable and matches your DOM snapshot
-        return this.page.locator('#search-genres[role="list"][aria-label="Genre"]');
-    }
+  constructor(root, page) {
+    super(root, page);
+  }
 
-    tiles() {
-        return this.list().locator('[role="listitem"][aria-label]');
-    }
+  list() { return this.root.locator(GenresGridComponent.SELECTORS.list); }
+  tiles() { return this.list().locator(GenresGridComponent.SELECTORS.tile); }
+  
+  tileByName(name) {
+    return this.list().locator(`[role="listitem"][aria-label="${name}"]`).first();
+  }
 
-    tileByName(name) {
-        // In DOM: <div role="listitem" aria-label="Action" ...>
-        return this.list().locator(`[role="listitem"][aria-label="${name}"]`).first();
-    }
+  // Returns the index of the genre that currently has focus
+  async focusedIndex() {
+    return this.tiles().evaluateAll((els, sel) => 
+      els.findIndex(tile => !!tile.querySelector(sel)), 
+      GenresGridComponent.SELECTORS.focused
+    );
+  }
 
-    tileCardByName(name) {
-        // Focus is on inner card: [data-focused="focused"]
-        return this.tileByName(name).locator('[data-testid][data-focused]').first();
-    }
-
-    async indexGenre(name) {
-        await expect(this.list(), 'Genre grid is not visible').toBeVisible();
-        await expect(async () => {
-            const count = await this.tiles().count();
-            expect(count).toBeGreaterThan(0);
-        }).toPass();
-
-        const labels = await this.tiles().evaluateAll((els) => {
-            return els.map(el => (el.getAttribute('aria-label') || '').trim());
-        });
-
-        const idx = labels.indexOf(name);
-        if (idx === -1) {
-            throw new Error(`Genre "${name}" not found. Available: ${labels.join(', ')}`);
-        }
-        return idx;
-    }
-
-    async focusedIndex() {
-        await expect(this.list(), 'Genre grid is not visible').toBeVisible();
-
-        return this.tiles().evaluateAll((els) => {
-            return els.findIndex((tile) => !!tile.querySelector('[data-focused="focused"]'));
-        });
-    }
+  async indexGenre(name) {
+    await expect(this.list()).toBeVisible();
+    const labels = await this.tiles().evaluateAll(els => 
+      els.map(el => (el.getAttribute('aria-label') || '').trim())
+    );
+    const idx = labels.indexOf(name);
+    if (idx === -1) throw new Error(`Genre "${name}" not found. Found: ${labels.join(', ')}`);
+    return idx;
+  }
 }
