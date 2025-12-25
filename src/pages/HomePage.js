@@ -25,6 +25,10 @@ export class HomePage extends BasePage {
     await expect(this.favAppList.appLocator('Watch TV')).toBeVisible();
   }
 
+  async isAppInFavorites(appName) {
+    return await this.favAppList.exists(appName);
+  }
+
   async focusFavApp(appName) {
     const count = await this.favAppList.count();
     if (count === 0) throw new Error('Favourite Apps row is empty.');

@@ -27,16 +27,17 @@ export class FavAppListComponent extends BaseComponent {
   }
 
   list() {
-    return this.listLocator;
+    return this.root.locator(FavAppListComponent
+      .SELECTORS.list);
   }
 
   items() {
-    return this.itemsLocator;
+    return this.visibleListLocator.locator(FavAppListComponent
+      .SELECTORS.item);
   }
 
   item(appName) {
-    const tile = this.appLocator(appName);
-    return new FavAppItemComponent(tile, this.page);
+    return new FavAppItemComponent(this.appLocator(appName), this.page);
   }
 
   editItem(appName) {

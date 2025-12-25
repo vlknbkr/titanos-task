@@ -54,7 +54,6 @@ export class CategoryListComponent extends BaseComponent {
         }, categoryName);
     }
 
- 
     async focusedIndexCategory() {
         return this.getAllCategories().evaluateAll((els) => {
             return els.findIndex((el) => el.getAttribute('data-focused') === 'focused');
