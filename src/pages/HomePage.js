@@ -15,7 +15,7 @@ export class HomePage extends BasePage {
   }
 
   async open() {
-    await this.page.goto("");
+    await this.navigate('');
     await this.isLoaded();
   }
 

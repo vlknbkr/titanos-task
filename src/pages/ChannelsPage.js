@@ -9,7 +9,7 @@ export class ChannelsPage extends BasePage {
   }
 
   async open() {
-    await this.page.goto('channels'); //
+    await this.navigate('channels');
     await this.isLoaded();
   }
 

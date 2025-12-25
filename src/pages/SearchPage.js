@@ -9,11 +9,11 @@ export class SearchPage extends BasePage {
   constructor(page) {
     super(page);
     this.search = new SearchComponent(page);
-    this.GRID_COLS = 6; 
+    this.GRID_COLS = 6;
   }
 
   async open() {
-    await this.page.goto("search");
+    await this.navigate('search');
     await this.isLoaded();
   }
 
@@ -45,7 +45,7 @@ export class SearchPage extends BasePage {
 
   async _moveFocusInGrid(targetIdx, cols) {
     const currentIdx = await this.search.genres.focusedIndex();
-    
+
     const curRow = Math.floor(currentIdx / cols);
     const curCol = currentIdx % cols;
     const tgtRow = Math.floor(targetIdx / cols);

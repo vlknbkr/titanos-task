@@ -13,8 +13,9 @@ export class BasePage {
     this.remote = new RemoteControl(page);
   }
 
-  async open() {
-    throw new Error('Method \'open()\' must be implemented.');
+  async navigate(path) {
+    await this.page.goto(path);
+    await this.page.waitForLoadState('networkidle');
   }
 
   async isLoaded() {

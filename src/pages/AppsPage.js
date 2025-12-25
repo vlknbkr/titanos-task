@@ -20,7 +20,7 @@ export class AppsPage extends BasePage {
   }
 
   async open() {
-    await this.page.goto("apps");
+    await this.navigate('apps');
     await this.isLoaded();
   }
 
