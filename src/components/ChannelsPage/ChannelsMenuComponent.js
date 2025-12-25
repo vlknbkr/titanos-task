@@ -1,40 +1,39 @@
 import { expect } from '@playwright/test';
 
 export class ChannelsMenuComponent {
-  /**
-   * @param {import('@playwright/test').Locator} root
-   * @param {import('@playwright/test').Page} page
-   */
+  static SELECTORS = {
+    container: '#channels-menu[role="menu"]',
+    group: '[role="group"][aria-label="Channels menu"]',
+    backBtn: '[data-testid="channels-back-button"]',
+    myChannelsBtn: '[data-testid="channels-open-my-channels-button"]',
+    addRemoveBtn: '[data-testid="channels-delete-from-my-channels-button"]',
+    epgBtn: '[data-testid="channels-open-epg-button"]'
+  };
+
   constructor(root, page) {
-    this._root = root;
+    this.root = root; // Consistent annotation
     this.page = page;
-
-    this.menu = this._root.locator('#channels-menu[role="menu"]');
-    this.group = this.menu.locator('[role="group"][aria-label="Channels menu"]');
-
-    this._backButton = this.menu.locator('[data-testid="channels-back-button"][role="menuitem"]');
-    this._myChannelsButton = this.menu.locator('[data-testid="channels-open-my-channels-button"][role="menuitem"]');
-    this._addToMyChannelsButton = this.menu.locator('[data-testid="channels-delete-from-my-channels-button"][role="menuitem"]');
-    this._allChannelsButton = this.menu.locator('[data-testid="channels-open-epg-button"][role="menuitem"]');
   }
 
-  root() {
-    return this.menu;
-  }
-  backButton() {
-    return this._backButton;
-  }
+  // Lazy locators
+  menu() { return this.root.locator(ChannelsMenuComponent.SELECTORS.container); }
+  group() { return this.menu().locator(ChannelsMenuComponent.SELECTORS.group); }
+  
+  backButton() { return this.menu().locator(ChannelsMenuComponent.SELECTORS.backBtn); }
+  myChannelsButton() { return this.menu().locator(ChannelsMenuComponent.SELECTORS.myChannelsBtn); }
+  addRemoveButton() { return this.menu().locator(ChannelsMenuComponent.SELECTORS.addRemoveBtn); }
+  allChannelsButton() { return this.menu().locator(ChannelsMenuComponent.SELECTORS.epgBtn); }
 
   async waitUntilReady() {
-    await expect(this.menu, 'Channels menu container should exist').toBeAttached();
-    await expect(this.group, 'Channels menu group should exist').toBeAttached();
-    await expect(this.menu, 'Channels menu content-ready should be true')
+    await expect(this.menu(), 'Channels menu container should exist').toBeAttached();
+    await expect(this.group(), 'Channels menu group should exist').toBeAttached();
+    await expect(this.menu(), 'Channels menu content-ready should be true')
       .toHaveAttribute('data-content-ready', 'true');
   }
 
   async isClosed() {
-    const transform = await this.group.evaluate(el => el.style.transform || '');
-    return transform.includes('translateX(-100%');
+    const transform = await this.group().evaluate(el => el.style.transform || '');
+    return transform.includes('translateX(-100%)'); // Matches DOM style
   }
 
   async waitUntilOpen() {

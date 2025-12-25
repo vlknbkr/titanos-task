@@ -1,21 +1,22 @@
-// src/components/ChannelsOverlayComponent.js
-import { ChannelInfoComponent } from '../ChannelsPage/ChannelInfoComponent.js';
-import { ChannelsMenuComponent } from '../ChannelsPage/ChannelsMenuComponent.js';
+import { ChannelInfoComponent } from './ChannelInfoComponent.js';
+import { ChannelsMenuComponent } from './ChannelsMenuComponent.js';
 
 export class ChannelsOverlayComponent {
-  /**
-   * @param {import('@playwright/test').Page} page
-   */
+  static SELECTORS = {
+    overlay: '[data-testid="player-overlay"]'
+  };
+
   constructor(page) {
     this.page = page;
+    // Single top-level root
+    this.root = this.page.locator(ChannelsOverlayComponent.SELECTORS.overlay);
 
-    this._root = this.page.locator('[data-testid="player-overlay"]');
-
-    this.channelInfo = new ChannelInfoComponent(this._root, this.page);
-    this.menu = new ChannelsMenuComponent(this._root, this.page);
+    // Sub-components inherit the overlay root
+    this.channelInfo = new ChannelInfoComponent(this.root, this.page);
+    this.menu = new ChannelsMenuComponent(this.root, this.page);
   }
 
-  root() {
-    return this._root;
+  rootLocator() {
+    return this.root;
   }
 }

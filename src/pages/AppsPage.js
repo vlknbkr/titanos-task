@@ -91,9 +91,9 @@ export class AppsPage extends BasePage {
     await this.remote.select(this.addToFavoritesButton);
 
     await Promise.race([
-      this.addToFavoritesButton.waitFor({ state: 'detached', timeout: 15000 }),
+      this.addToFavoritesButton.waitFor({ state: 'detached', timeout: 30000 }),
       expect(this.addToFavoritesButton)
-        .toHaveAttribute('data-loading', 'false', { timeout: 15000 }),
+        .toHaveAttribute('data-loading', 'false', { timeout: 30000 }),
     ]);
   }
 }

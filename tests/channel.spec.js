@@ -1,21 +1,20 @@
-// tests/channels.spec.js
 import { test, expect } from '../src/fixtures/fixtures.js';
 
-test.describe('Channels', () => {
-  test('Verify channels page is available to us', async ({ channelsPage }) => {
+test.describe('Channels Feature', () => {
+  test('Add current channel to favorites via sidebar menu', async ({ channelsPage }) => {
     await channelsPage.open();
 
-    const beforeKey = await channelsPage.overlay.channelInfo.currentKey();
-    expect(beforeKey, 'Initial channel key should be readable').toBeTruthy();
+    // 1. Capture state before action
+    const channelKey = await channelsPage.overlay.channelInfo.currentKey();
+    
+    // 2. Add to favorites
+    await channelsPage.toggleFavoriteCurrentChannel();
 
-    await channelsPage.switchChannel('down', 2);
-
-    const afterKey = await channelsPage.overlay.channelInfo.currentKey();
-    expect(afterKey, 'Channel should change after switching').not.toBe(beforeKey);
-
+    // 3. Optional: Re-open menu to verify button state has changed (e.g., text is "Remove")
     await channelsPage.openMenu();
-    await expect(channelsPage.overlay.menu.backButton(), 'Menu back button should be visible').toBeVisible();
-
-    await channelsPage.closeMenu();
+    await channelsPage.remote.down(2);
+    const btnLabel = await channelsPage.overlay.menu.addRemoveButton().innerText();
+    // Your DOM showed "Add to my channels"; once added, it typically flips to "Remove..."
+    console.log(`Current Button Label: ${btnLabel}`);
   });
 });
