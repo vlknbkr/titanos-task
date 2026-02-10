@@ -1,4 +1,5 @@
 import { expect } from '@playwright/test';
+import { keymap } from './keymap.js';
 
 export class RemoteControl {
   constructor(page, options = {}) {
@@ -21,23 +22,23 @@ export class RemoteControl {
   }
 
   async left(times = 1) {
-    await this.press('ArrowLeft', times);
+    await this.press(keymap.LEFT, times);
   }
 
   async right(times = 1) {
-    await this.press('ArrowRight', times);
+    await this.press(keymap.RIGHT, times);
   }
 
   async up(times = 1) {
-    await this.press('ArrowUp', times);
+    await this.press(keymap.UP, times);
   }
 
   async down(times = 1) {
-    await this.press('ArrowDown', times);
+    await this.press(keymap.DOWN, times);
   }
 
   async back() {
-    await this.press('Backspace', 1);
+    await this.press(keymap.BACK, 1);
   }
 
   async assertFocused(target) {
@@ -52,7 +53,7 @@ export class RemoteControl {
     if (target) {
       await this.assertFocused(target);
     }
-    await this.page.keyboard.press('Enter', { delay: this.delay });
+    await this.page.keyboard.press(keymap.OK, { delay: this.delay });
     this._log('[Remote] SELECT');
 
     await this.page.waitForTimeout(this.delay);
@@ -64,9 +65,9 @@ export class RemoteControl {
     }
     this._log(`[Remote] LONG SELECT (${this.longPressMs}ms)`);
 
-    await this.page.keyboard.down('Enter');
+    await this.page.keyboard.down(keymap.OK);
     await this.page.waitForTimeout(this.longPressMs);
-    await this.page.keyboard.up('Enter');
+    await this.page.keyboard.up(keymap.OK);
 
     await this.page.waitForTimeout(this.delay);
   }
