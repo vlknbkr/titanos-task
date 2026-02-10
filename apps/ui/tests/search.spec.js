@@ -1,5 +1,5 @@
-import { test, expect } from '../src/fixtures/fixtures.js';
-import { APPS_DATA } from '../src/test-data/test.data.js';
+import { test, expect } from '../fixtures/fixtures.js';
+import { APPS_DATA } from '../test-data/test.data.js';
 
 const genreName = APPS_DATA.ACTION_GENRE;
 
@@ -12,5 +12,12 @@ test.describe('Search', () => {
     await expect(searchPage.search.results.tabs(), 'Search results tabs should be visible').toBeVisible();
 
     await searchPage.search.results.waitUntilResolved();
+  });
+
+  test('Verify search by keyboard input', async ({ searchPage }) => {
+    await searchPage.open();
+    await searchPage.searchByQuery('Matrix');
+    await expect(searchPage.search.results.grid()).toBeVisible();
+    await expect(searchPage.search.results.emptyState()).toBeHidden();
   });
 });

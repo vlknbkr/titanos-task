@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test';
 import { keymap } from './keymap.js';
+import { assertFocused } from '../focus/index.js';
 
 export class RemoteControl {
   constructor(page, options = {}) {
@@ -41,17 +42,9 @@ export class RemoteControl {
     await this.press(keymap.BACK, 1);
   }
 
-  async assertFocused(target) {
-    if (!target) throw new Error('assertFocused(target) requires a Locator');
-
-    await expect(target).toHaveAttribute('data-focused', /^(focused|true)$/i, {
-      timeout: this.timeout,
-    });
-  }
-
   async select(target) {
     if (target) {
-      await this.assertFocused(target);
+      await assertFocused(target, this.timeout);
     }
     await this.page.keyboard.press(keymap.OK, { delay: this.delay });
     this._log('[Remote] SELECT');
@@ -61,7 +54,7 @@ export class RemoteControl {
 
   async longPressSelect(target) {
     if (target) {
-      await this.assertFocused(target);
+      await assertFocused(target, this.timeout);
     }
     this._log(`[Remote] LONG SELECT (${this.longPressMs}ms)`);
 

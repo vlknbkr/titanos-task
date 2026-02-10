@@ -64,4 +64,13 @@ export class ChannelsPage extends BasePage {
     else await this.remote.up(steps);
     await this.overlay.channelInfo.waitForChannelChange(beforeKey);
   }
+
+  async getCurrentChannelInfo() {
+    if (!await this.overlay.rootLocator().isVisible()) {
+      await this.remote.select();
+    }
+    const key = await this.overlay.channelInfo.currentKey();
+    const parts = key.split('|');
+    return { id: parts[0], number: parts[1], title: parts[2] };
+  }
 }

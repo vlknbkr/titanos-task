@@ -65,4 +65,10 @@ export class HomePage extends BasePage {
     await expect(removeBtn).toHaveAttribute('data-focused', 'focused', { timeout: 3000 });
     await this.remote.select(removeBtn);
   }
+
+  async launchApp(appName) {
+    await this.focusFavApp(appName);
+    await this.remote.select();
+    await this.page.waitForURL(/.*\/details\/app\/.*/, { timeout: 10000 });
+  }
 }

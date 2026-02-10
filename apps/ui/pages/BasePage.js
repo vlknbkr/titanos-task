@@ -1,4 +1,4 @@
-import { RemoteControl } from '../utils/RemoteControl';
+import { RemoteControl } from '../../../packages/shared/remote/RemoteControl.js';
 
 export class BasePage {
 

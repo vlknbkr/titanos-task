@@ -1,4 +1,4 @@
-import { test, expect } from '../src/fixtures/fixtures.js';
+import { test, expect } from '../fixtures/fixtures.js';
 
 test('Verify an app can be added to favorites', async ({ cleanFavState, appsPage, homePage }) => {
     await appsPage.open();

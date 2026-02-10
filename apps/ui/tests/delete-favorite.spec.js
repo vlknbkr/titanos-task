@@ -1,4 +1,4 @@
-import { test, expect } from '../src/fixtures/fixtures.js';
+import { test, expect } from '../fixtures/fixtures.js';
 
 test('Delete app from favorites', async ({ readyToDeleteState, homePage }) => {
     await homePage.focusFavApp(readyToDeleteState.name);

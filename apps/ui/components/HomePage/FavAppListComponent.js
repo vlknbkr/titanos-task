@@ -61,7 +61,10 @@ export class FavAppListComponent extends BaseComponent {
 
   async focusedIndex() {
     return this.itemsLocator.evaluateAll((els, attr) =>
-      els.findIndex((el) => el.getAttribute(attr) === 'focused'),
+      els.findIndex((el) => {
+        const val = el.getAttribute(attr);
+        return val && /^(focused|true)$/i.test(val);
+      }),
       FavAppListComponent.SELECTORS.focusedAttr
     );
   }

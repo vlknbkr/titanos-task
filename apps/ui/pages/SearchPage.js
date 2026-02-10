@@ -43,6 +43,12 @@ export class SearchPage extends BasePage {
     await this.search.results.waitUntilResolved();
   }
 
+  async searchByQuery(query) {
+    await this.isLoaded();
+    await this.search.bar.input().fill(query);
+    await this.search.results.waitUntilResolved();
+  }
+
   async _moveFocusInGrid(targetIdx, cols) {
     const currentIdx = await this.search.genres.focusedIndex();
 
