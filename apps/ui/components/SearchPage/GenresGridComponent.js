@@ -6,7 +6,7 @@ export class GenresGridComponent extends BaseComponent {
     list: '#search-genres[role="list"]',
     tile: '[role="listitem"]',
     card: '._mediaCard_10koe_1',
-    focused: '[data-focused="focused"]'
+    focused: '[data-focused="focused"], [data-focused="true"]'
   };
 
   constructor(root, page) {

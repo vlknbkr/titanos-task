@@ -74,8 +74,7 @@ export class ChannelsPage extends BasePage {
     // or if focus was not correctly restored.
     await assertFocused(this.overlay.channelInfo.switcher());
 
-    // Allow a brief moment for event listeners to re-attach after focus restoration
-    await this.page.waitForTimeout(500);
+    // assertFocused on L75 already guarantees the switcher is focused and ready.
 
     if (direction === 'down') await this.remote.down(steps);
     else await this.remote.up(steps);

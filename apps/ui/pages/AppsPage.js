@@ -1,5 +1,6 @@
 import { BasePage } from './BasePage.js';
 import { expect } from '@playwright/test';
+import { assertFocused } from '../../../packages/shared/focus/index.js';
 import { MiniBannerComponent } from '../components/AppPage/MiniBannerComponent.js';
 import { CategoryListComponent } from '../components/AppPage/CategoryListComponent.js';
 
@@ -48,7 +49,7 @@ export class AppsPage extends BasePage {
 
     for (let s = 0; s < steps; s++) { await move(); }
 
-    await expect(this.categories.getCategoryLocator(categoryName)).toHaveAttribute('data-focused', 'focused');
+    await assertFocused(this.categories.getCategoryLocator(categoryName));
   }
 
   async focusApp(categoryName, appName) {
@@ -65,7 +66,7 @@ export class AppsPage extends BasePage {
     for (let s = 0; s < steps; s++) { await move(); }
     const targetApp = categoryRow.getAppLocator(appName);
 
-    await expect(targetApp).toHaveAttribute('data-focused', 'focused', { timeout: 10000 });
+    await assertFocused(targetApp, 10000);
   }
 
   async addFocusedAppToFavApps(categoryName, appName) {

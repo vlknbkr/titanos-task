@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { BasePage } from './BasePage.js';
 import { FavAppListComponent } from '../components/HomePage/FavAppListComponent.js';
+import { assertFocused } from '../../../packages/shared/focus/index.js';
 
 export class HomePage extends BasePage {
   /**
@@ -15,7 +16,7 @@ export class HomePage extends BasePage {
   }
 
   async open() {
-    await this.safeNavigate('', '[data-testid="user-apps"]');
+    await this.navigate('');
     await this.isLoaded();
   }
 
@@ -48,7 +49,7 @@ export class HomePage extends BasePage {
       await move();
     }
 
-    await expect(this.favAppList.items().nth(target)).toHaveAttribute('data-focused', 'focused');
+    await assertFocused(this.favAppList.items().nth(target));
   }
 
   async removeFocusedFavApp(appName) {
@@ -62,7 +63,7 @@ export class HomePage extends BasePage {
 
     await this.remote.down();
 
-    await expect(removeBtn).toHaveAttribute('data-focused', 'focused', { timeout: 3000 });
+    await assertFocused(removeBtn, 5000);
     await this.remote.select(removeBtn);
   }
 

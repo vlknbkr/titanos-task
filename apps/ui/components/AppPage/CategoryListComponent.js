@@ -56,7 +56,10 @@ export class CategoryListComponent extends BaseComponent {
 
     async focusedIndexCategory() {
         return this.getAllCategories().evaluateAll((els) => {
-            return els.findIndex((el) => el.getAttribute('data-focused') === 'focused');
+            return els.findIndex((el) => {
+                const v = (el.getAttribute('data-focused') || '').toLowerCase();
+                return v === 'true' || v === 'focused';
+            });
         });
     }
 }

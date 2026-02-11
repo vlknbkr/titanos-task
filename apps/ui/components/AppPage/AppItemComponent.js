@@ -2,8 +2,7 @@ import { BaseComponent } from '../BasePage/BaseComponent';
 
 export class AppItemComponent extends BaseComponent {
     static SELECTORS = {
-        focusedAttr: 'data-focused',
-        focusedValue: 'focused'
+        focusedAttr: 'data-focused'
     };
 
     async getName() {
@@ -12,8 +11,8 @@ export class AppItemComponent extends BaseComponent {
     }
 
     async isFocused() {
-        const focused = await this.root.getAttribute(AppItemComponent.SELECTORS.focusedAttr);
-        return focused === AppItemComponent.SELECTORS.focusedValue;
+        const v = (await this.root.getAttribute(AppItemComponent.SELECTORS.focusedAttr) || '').toLowerCase();
+        return v === 'true' || v === 'focused';
     }
 
     locator() {

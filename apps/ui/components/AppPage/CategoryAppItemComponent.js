@@ -34,9 +34,8 @@ export class CategoryAppItemComponent extends BaseComponent {
     }
 
     async isFocused() {
-        const focused = await this.root.getAttribute(CategoryAppItemComponent.SELECTORS.focusedAttr);
-        const isFocusedAttr = await this.root.getAttribute('data-is-focused');
-        return focused === 'focused' || isFocusedAttr === 'true';
+        const v = (await this.root.getAttribute('data-focused') || '').toLowerCase();
+        return v === 'true' || v === 'focused';
     }
 
     async indexApp(appName) {
@@ -48,7 +47,10 @@ export class CategoryAppItemComponent extends BaseComponent {
 
     async focusedIndexApp() {
         return this.itemsLocator.evaluateAll((els, attr) =>
-            els.findIndex(el => el.getAttribute(attr) === 'focused'),
+            els.findIndex(el => {
+                const v = (el.getAttribute(attr) || '').toLowerCase();
+                return v === 'true' || v === 'focused';
+            }),
             CategoryAppItemComponent.SELECTORS.focusedAttr
         );
     }

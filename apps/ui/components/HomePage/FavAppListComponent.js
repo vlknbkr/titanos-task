@@ -8,7 +8,6 @@ export class FavAppListComponent extends BaseComponent {
     visible: '[aria-hidden="false"]',
     ready: '[data-content-ready="true"]',
     focusedAttr: 'data-focused',
-    focusedValue: 'focused',
   };
 
   constructor(root, page) {
