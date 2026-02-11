@@ -15,7 +15,7 @@ export class HomePage extends BasePage {
   }
 
   async open() {
-    await this.navigate('');
+    await this.safeNavigate('', '[data-testid="user-apps"]');
     await this.isLoaded();
   }
 

@@ -21,9 +21,16 @@ export class ChannelInfoComponent {
   }
 
   async currentKey() {
-    const id = (await this.meta().getAttribute('data-channel-id'))?.trim() ?? '';
-    const num = (await this.meta().getAttribute('data-channel-number'))?.trim() ?? '';
-    const title = (await this.meta().getAttribute('data-channel-title'))?.trim() ?? '';
+    // Ensure we are reading the key of the FOCUSED channel.
+    // Selector policy allows "true" or "focused".
+    // We use CSS OR logic via comma separated selectors or just check for attribute presence if safe.
+    // Ideally: [data-focused="true"], [data-focused="focused"]
+    const focusedMeta = this.panel()
+      .locator(`${ChannelInfoComponent.SELECTORS.switcher}[data-focused="true"] ${ChannelInfoComponent.SELECTORS.meta}, ${ChannelInfoComponent.SELECTORS.switcher}[data-focused="focused"] ${ChannelInfoComponent.SELECTORS.meta}`);
+
+    const id = (await focusedMeta.getAttribute('data-channel-id'))?.trim() ?? '';
+    const num = (await focusedMeta.getAttribute('data-channel-number'))?.trim() ?? '';
+    const title = (await focusedMeta.getAttribute('data-channel-title'))?.trim() ?? '';
     const key = `${id}|${num}|${title}`;
     return key === '||' ? '' : key;
   }

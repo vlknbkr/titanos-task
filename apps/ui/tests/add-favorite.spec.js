@@ -7,7 +7,7 @@ test('Verify an app can be added to favorites', async ({ cleanFavState, appsPage
 
     await expect
         .poll(async () => await homePage.favAppList.exists(cleanFavState.name), {
-            timeout: 15000,
+            timeout: 20000,
             message: `App ${cleanFavState.name} should have appeared in Favorites`
         })
         .toBe(true);

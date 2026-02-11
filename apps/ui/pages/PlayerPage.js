@@ -15,9 +15,16 @@ export class PlayerPage extends BasePage {
         await this.controls.waitForVisible();
     }
 
-    async open(assetId = '123') {
-        // Direct navigation if supported, otherwise via UI
-        await this.navigate(`player/${assetId}`);
+    async open(assetId = '1745') {
+        // Navigate via Details Page because direct player deep link is flaky
+        await this.navigate(`details/app/${assetId}`);
+
+        // Find and click Play/Watch button
+        // Assuming the primary action on details is Play or there is a specific button
+        const playButton = this.page.locator('button:has-text("Watch"), button:has-text("Play")').first();
+        await expect(playButton).toBeVisible();
+
+        await this.remote.select(playButton);
         await this.isLoaded();
     }
 

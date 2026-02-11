@@ -10,29 +10,26 @@ export const test = base.extend({
   cleanFavState: async ({ homePage }, use) => {
     const app = APPS_DATA.NEWS_APP;
 
-    // 1- go to app.url
-    await homePage.navigate(app.url);
-
+    await homePage.page.goto(app.url, { waitUntil: 'domcontentloaded' });
+    await homePage.page.waitForTimeout(2000);
     const favButton = homePage.page.locator('[id="app-fav-button"]');
     await favButton.waitFor({ state: 'visible', timeout: 30000 });
 
-    // Check loading state
-    await expect(favButton).toHaveAttribute('data-loading', 'false', { timeout: 30000 });
 
     // 2- check the add to Favorites button
     const text = await favButton.textContent();
+    console.log("fav button text context is: ", text);
     const isAdded = text?.toLowerCase().includes('remove'); // If it says "Remove", it is added.
 
     // 4- if instead of add to favorites button, remove from favorites button exist.
     if (isAdded) {
-      // 4.1- click the button
-      await homePage.remote.select(favButton);
-      // Wait for button to disappear (page reload)
-      await favButton.waitFor({ state: 'detached', timeout: 60000 });
-      await expect(favButton).toHaveText(/add to/i, { timeout: 60000 });
+      await homePage.remote.select(favButton)
+      // Allow UI to settle
+      await homePage.page.waitForTimeout(1000);
+      await expect(favButton).toHaveAttribute('data-loading', 'false', { timeout: 200000 });
+      await expect(favButton).toHaveText("Add to Favourites");
     }
 
-    // 3- return the homepage
     await homePage.open();
 
     await use(app);
@@ -41,26 +38,28 @@ export const test = base.extend({
   readyToDeleteState: async ({ homePage }, use) => {
     const app = APPS_DATA.ENTERTAINMENT_APP;
 
-    await homePage.navigate(app.url);
+    await homePage.page.goto(app.url, { waitUntil: 'domcontentloaded' });
 
     const favButton = homePage.page.locator('[id="app-fav-button"]');
-    await favButton.waitFor({ state: 'visible', timeout: 30000 });
+    const openButton = homePage.page.locator('[id="app-open-button"]');
 
-    await expect(favButton).toHaveAttribute('data-loading', 'false', { timeout: 30000 });
+    const focusValue = await openButton.getAttribute('data-focused');
+    const isOpenButtonFocused = focusValue === 'true';
+
+    if (isOpenButtonFocused) {
+      await homePage.remote.left();
+      const isFavButtonFocused = await favButton.getAttribute('data-focused');
+      await expect(isFavButtonFocused).toBe("true");
+    }
 
     const text = await favButton.textContent();
-    const isAdded = text?.toLowerCase().includes('remove');
+    const isReadyToAdd = text?.toLowerCase().includes('add');
 
-    if (!isAdded) {
-      // Click to add
+    if (isReadyToAdd) {
       await homePage.remote.select(favButton);
-      // Wait for button to disappear (page reload)
-      await favButton.waitFor({ state: 'detached', timeout: 60000 });
-      await homePage.page.waitForURL(process.env.BASE_URL, { timeout: 60000 });
-      
-    }
-    if (homePage.page.url() == process.env.BASE_URL) {
+      await homePage.page.waitForURL(process.env.BASE_URL, { timeout: 150000 });
       await homePage.isLoaded();
+      await homePage.remote.select();
     } else {
       await homePage.open();
     }

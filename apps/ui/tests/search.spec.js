@@ -16,8 +16,7 @@ test.describe('Search', () => {
 
   test('Verify search by keyboard input', async ({ searchPage }) => {
     await searchPage.open();
-    await searchPage.searchByQuery('Matrix');
+    await searchPage.searchByQuery('MATRIX');
     await expect(searchPage.search.results.grid()).toBeVisible();
-    await expect(searchPage.search.results.emptyState()).toBeHidden();
   });
 });

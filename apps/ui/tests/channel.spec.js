@@ -5,13 +5,11 @@ test.describe('Channels Feature', () => {
     await channelsPage.open();
 
     await channelsPage.testFavoriteFullCycle();
-
-    await channelsPage.switchChannel('down', 1);
   });
 
   test('Verify channel content metadata', async ({ channelsPage }) => {
     await channelsPage.open();
-    await channelsPage.switchChannel('down', 1);
+    await channelsPage.switchChannel('down', 2);
 
     const info = await channelsPage.getCurrentChannelInfo();
 

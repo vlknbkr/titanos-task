@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { BasePage } from './BasePage.js';
 import { ChannelsOverlayComponent } from '../components/ChannelsPage/ChannelsOverlayComponent.js';
+import { assertFocused } from '../../../packages/shared/focus/index.js';
 
 export class ChannelsPage extends BasePage {
   constructor(page) {
@@ -38,6 +39,11 @@ export class ChannelsPage extends BasePage {
 
     const initialState = await this.overlay.menu.getToggleAction();
 
+    // Fix: Ensure the button is focused before action.
+    // Although remote.select() checks focus, the navigation (remote.down) is blind.
+    // We must wait for the focus to land on the button.
+    await assertFocused(toggleBtn);
+
     await this.remote.select(toggleBtn);
 
     await expect.poll(async () => await this.overlay.menu.getToggleAction(), {
@@ -57,9 +63,20 @@ export class ChannelsPage extends BasePage {
 
 
   async switchChannel(direction = 'down', steps = 2) {
-    await this.remote.select();
+    if (!await this.overlay.rootLocator().isVisible()) {
+      await this.remote.select();
+    }
 
     const beforeKey = await this.overlay.channelInfo.currentKey();
+
+    // Fix: Ensure we have focus on the switcher before navigating
+    // This prevents "lost keystrokes" if the menu close animation isn't fully settled
+    // or if focus was not correctly restored.
+    await assertFocused(this.overlay.channelInfo.switcher());
+
+    // Allow a brief moment for event listeners to re-attach after focus restoration
+    await this.page.waitForTimeout(500);
+
     if (direction === 'down') await this.remote.down(steps);
     else await this.remote.up(steps);
     await this.overlay.channelInfo.waitForChannelChange(beforeKey);

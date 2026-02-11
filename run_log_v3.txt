@@ -1,0 +1,69 @@
+[dotenv@17.2.3] injecting env (1) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+Running 1 test using 1 worker
+
+[1A[2K[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+[1A[2K[1/1] [chromium] › apps/ui/tests/channel.spec.js:4:3 › Channels Feature › Add current channel to favorites via sidebar menu
+[1A[2K[chromium] › apps/ui/tests/channel.spec.js:4:3 › Channels Feature › Add current channel to favorites via sidebar menu
+[Remote] SELECT
+
+[1A[2K[Remote] ArrowLeft
+
+[1A[2K[Remote] ArrowUp
+
+[1A[2K[Remote] SELECT
+
+[1A[2K[Remote] ArrowDown
+
+[1A[2K[Remote] ArrowDown
+
+[1A[2K  1) [chromium] › apps/ui/tests/channel.spec.js:4:3 › Channels Feature › Add current channel to favorites via sidebar menu 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('[data-testid="player-overlay"]').locator('#channels-menu[role="menu"]').locator('[data-testid="channels-add-to-my-channels-button"], [data-testid="channels-delete-from-my-channels-button"]')
+    Expected: [32m"true"[39m
+    Received: [31m"focused"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator('[data-testid="player-overlay"]').locator('#channels-menu[role="menu"]').locator('[data-testid="channels-add-to-my-channels-button"], [data-testid="channels-delete-from-my-channels-button"]')[22m
+    [2m    9 × locator resolved to <div role="menuitem" data-focused="focused" aria-label="Delete channel" class="_channelsMenuItem_1tjf8_193 " data-testid="channels-add-to-my-channels-button">…</div>[22m
+    [2m      - unexpected value "focused"[22m
+
+
+       at ../pages/ChannelsPage.js:44
+
+      42 |     // Although remote.select() checks focus, the navigation (remote.down) is blind.
+      43 |     // We must wait for the focus to land on the button.
+    > 44 |     await expect(toggleBtn).toHaveAttribute('data-focused', 'true');
+         |                             ^
+      45 |
+      46 |     await this.remote.select(toggleBtn);
+      47 |
+        at ChannelsPage.testFavoriteFullCycle (/Users/volkanbakar/Documents/Volkan Project/titanOS-task/apps/ui/pages/ChannelsPage.js:44:29)
+        at /Users/volkanbakar/Documents/Volkan Project/titanOS-task/apps/ui/tests/channel.spec.js:7:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/channel-Channels-Feature-A-e444b--favorites-via-sidebar-menu-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/channel-Channels-Feature-A-e444b--favorites-via-sidebar-menu-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/channel-Channels-Feature-A-e444b--favorites-via-sidebar-menu-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/channel-Channels-Feature-A-e444b--favorites-via-sidebar-menu-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/channel-Channels-Feature-A-e444b--favorites-via-sidebar-menu-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  1 failed
+    [chromium] › apps/ui/tests/channel.spec.js:4:3 › Channels Feature › Add current channel to favorites via sidebar menu 

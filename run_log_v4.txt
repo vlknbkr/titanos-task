@@ -1,0 +1,69 @@
+[dotenv@17.2.3] injecting env (1) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+Running 1 test using 1 worker
+
+[1A[2K[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+
+[1A[2K[1/1] [chromium] › apps/ui/tests/channel.spec.js:4:3 › Channels Feature › Add current channel to favorites via sidebar menu
+[1A[2K[chromium] › apps/ui/tests/channel.spec.js:4:3 › Channels Feature › Add current channel to favorites via sidebar menu
+[Remote] SELECT
+
+[1A[2K[Remote] ArrowLeft
+
+[1A[2K[Remote] ArrowUp
+
+[1A[2K[Remote] SELECT
+
+[1A[2K[Remote] ArrowDown
+
+[1A[2K[Remote] ArrowDown
+
+[1A[2K[Remote] SELECT
+
+[1A[2K[Remote] SELECT
+
+[1A[2K[Remote] ArrowDown
+
+[1A[2K  1) [chromium] › apps/ui/tests/channel.spec.js:4:3 › Channels Feature › Add current channel to favorites via sidebar menu 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mnot[2m.[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: not [32m"140746|5003|Euronews Español"[39m
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+       at ../components/ChannelsPage/ChannelInfoComponent.js:32
+
+      30 |
+      31 |   async waitForChannelChange(previousKey, { timeout = 15000 } = {}) {
+    > 32 |     await expect
+         |     ^
+      33 |       .poll(async () => await this.currentKey(), { timeout })
+      34 |       .not.toBe(previousKey);
+      35 |   }
+        at ChannelInfoComponent.waitForChannelChange (/Users/volkanbakar/Documents/Volkan Project/titanOS-task/apps/ui/components/ChannelsPage/ChannelInfoComponent.js:32:5)
+        at ChannelsPage.switchChannel (/Users/volkanbakar/Documents/Volkan Project/titanOS-task/apps/ui/pages/ChannelsPage.js:79:5)
+        at /Users/volkanbakar/Documents/Volkan Project/titanOS-task/apps/ui/tests/channel.spec.js:9:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/channel-Channels-Feature-A-e444b--favorites-via-sidebar-menu-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/channel-Channels-Feature-A-e444b--favorites-via-sidebar-menu-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/channel-Channels-Feature-A-e444b--favorites-via-sidebar-menu-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/channel-Channels-Feature-A-e444b--favorites-via-sidebar-menu-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/channel-Channels-Feature-A-e444b--favorites-via-sidebar-menu-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[1A[2K  1 failed
+    [chromium] › apps/ui/tests/channel.spec.js:4:3 › Channels Feature › Add current channel to favorites via sidebar menu 
